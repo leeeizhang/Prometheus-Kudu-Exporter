@@ -1,21 +1,28 @@
 package io.prometheus.kudu.sink;
 
+import io.prometheus.kudu.util.LoggerUtils;
+
 import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 
 public class KuduMetricsPool<T> implements Serializable {
 
-    private static final Logger logger = Logger.getLogger(KuduMetricsPool.class.getName());
+    private static final Logger logger = LoggerUtils.Logger();
 
     private final Map<Integer, Future<T>> repoFuture;
     private final Map<Integer, T> repoHistory;
 
-    public KuduMetricsPool() {
+    private KuduMetricsPool() {
         this.repoFuture = new ConcurrentHashMap<>(1024);
         this.repoHistory = new ConcurrentHashMap<>(1024);
+    }
+
+    public static <T> KuduMetricsPool build() throws Exception {
+        return new KuduMetricsPool<T>();
     }
 
     public void put(Integer id, Future<T> future) {

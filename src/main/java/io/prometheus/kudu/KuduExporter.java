@@ -1,11 +1,12 @@
 package io.prometheus.kudu;
 
-import io.prometheus.client.Collector;
-import io.prometheus.client.exporter.HTTPServer;
 import io.prometheus.kudu.config.KuduExporterConfiguration;
-import io.prometheus.kudu.producer.KuduMetricsFetcherRunner;
-import io.prometheus.kudu.reducer.KuduMetricsReporterRunner;
+import io.prometheus.kudu.fetcher.KuduMetricFetcherRunner;
+import io.prometheus.kudu.reporter.KuduMetricReporterRunner;
 import io.prometheus.kudu.sink.KuduMetricsPool;
+import io.prometheus.kudu.util.ArgsEntity;
+import io.prometheus.kudu.util.LoggerUtils;
+import org.kohsuke.args4j.CmdLineParser;
 
 import java.util.List;
 import java.util.Map;
@@ -13,24 +14,24 @@ import java.util.logging.Logger;
 
 public class KuduExporter {
 
-    private static final Logger logger = Logger.getLogger(KuduExporter.class.getName());
-    private static final String YAML_DEFAULT_PATH = "/home/yzf/kudu-exporter.yaml";
+    private static final Logger logger = LoggerUtils.Logger();
 
     public static void main(String[] args) {
         try {
-            KuduExporterConfiguration configuration = KuduExporterConfiguration
-                    .getFromConfiguration(YAML_DEFAULT_PATH);
+            // Parser the parameters into ArgsEntity
+            ArgsEntity argsEntity = new ArgsEntity() {{
+                new CmdLineParser(this).parseArgument(args);
+            }};
 
-            HTTPServer reporter = new HTTPServer(configuration.getReporterPort(), true);
-            KuduMetricsPool<List<Map<?, ?>>> metricsPool = new KuduMetricsPool<>();
+            // Build configuration and metric pool
+            KuduExporterConfiguration configuration = KuduExporterConfiguration.getFromConfiguration(argsEntity);
+            KuduMetricsPool<List<Map<?, ?>>> metricsPool = KuduMetricsPool.<List<Map<?, ?>>>build();
 
-            Thread fetcherRunner = new Thread(KuduMetricsFetcherRunner.builder(configuration, metricsPool));
-            fetcherRunner.start();
-
-            Collector reporterRunner = KuduMetricsReporterRunner.builder(configuration, metricsPool);
-            reporterRunner.register();
+            // Start fetcher jobs and the reporter job by custom configuration
+            KuduMetricFetcherRunner.run(configuration, metricsPool);
+            KuduMetricReporterRunner.run(configuration, metricsPool);
         } catch (Exception e) {
-            logger.warning(e.toString());
+            logger.warning(String.format("Running with Exception: %s", e.getMessage()));
         }
     }
 

@@ -7,19 +7,18 @@ import java.util.List;
 import java.util.Map;
 
 public class MetricSampleTemplate {
-
     private String metricPrefix;
     private List<String> labelNames;
     private List<String> labelValues;
-    private String[] includeKeys;
-    private String[] excludeKeys;
+    private List<String> includeKeys;
+    private List<String> excludeKeys;
 
     public MetricSampleTemplate(
             String metricPrefix,
             List<String> labelNames,
             List<String> labelValues,
-            String[] includeKeys,
-            String[] excludeKeys) {
+            List<String> includeKeys,
+            List<String> excludeKeys) {
         this.metricPrefix = metricPrefix;
         this.labelNames = labelNames;
         this.labelValues = labelValues;
@@ -30,8 +29,8 @@ public class MetricSampleTemplate {
     public static final MetricSampleTemplate buildTemplate(
             String prefix,
             Map<String, String> labels,
-            String[] includeKeys,
-            String[] excludeKeys) {
+            List<String> includeKeys,
+            List<String> excludeKeys) {
         List<String> labelNames = new ArrayList<>();
         List<String> labelValues = new ArrayList<>();
         if (labels != null && !labels.isEmpty()) {
@@ -40,6 +39,7 @@ public class MetricSampleTemplate {
                 labelValues.add(label.getValue());
             }
         }
+
         return new MetricSampleTemplate(prefix, labelNames, labelValues, includeKeys, excludeKeys);
     }
 
@@ -49,15 +49,15 @@ public class MetricSampleTemplate {
 
     private final boolean filterMetricName(String metricName) {
 
-        for (int i = 0; i < excludeKeys.length; i++) {
-            if (!"".equals(excludeKeys[i]) && metricName.contains(excludeKeys[i])) {
+        for (int i = 0; i < excludeKeys.size(); i++) {
+            if (!StringUtils.isEmpty(excludeKeys.get(i)) && metricName.contains(excludeKeys.get(i))) {
                 return false;
             }
         }
 
-        boolean includeFlag = (includeKeys.length == 0);
-        for (int i = 0; i < includeKeys.length; i++) {
-            if (!"".equals(includeKeys[i]) && metricName.contains(includeKeys[i])) {
+        boolean includeFlag = (includeKeys.size() == 0);
+        for (int i = 0; i < includeKeys.size(); i++) {
+            if (!StringUtils.isEmpty(includeKeys.get(i)) && metricName.contains(includeKeys.get(i))) {
                 includeFlag = true;
                 break;
             }
@@ -83,6 +83,7 @@ public class MetricSampleTemplate {
             return new Collector.MetricFamilySamples.Sample(
                     metricName, labelNames, labelValues, value.doubleValue());
         }
+
         return null;
     }
 
