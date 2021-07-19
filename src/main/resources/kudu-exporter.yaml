@@ -1,6 +1,0 @@
-prom.kudu.metric.url: http://127.0.0.1:8050/metrics;
-prom.kudu.metric.reporter-port: 9055
-prom.kudu.metric.fetch-interval: 5000
-prom.kudu.metric.push-interval: 5000
-prom.kudu.metric.include-keyword: disk;cpu
-prom.kudu.metric.exclude-keyword: log

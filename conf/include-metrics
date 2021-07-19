@@ -1,0 +1,6 @@
+on_disk_data_size
+on_disk_size
+rows_deleted
+rows_inserted
+rows_updated
+rows_upserted
