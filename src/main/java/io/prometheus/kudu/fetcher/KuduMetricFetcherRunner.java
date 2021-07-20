@@ -42,7 +42,7 @@ public class KuduMetricFetcherRunner implements Runnable {
             ExecutorService threadPool = Executors.newWorkStealingPool();
             while (true) {
                 for (int i = configuration.getKuduNodes().size() - 1; i >= 0; i--) {
-                    this.metricsPool.put(i, threadPool.submit(
+                    this.metricsPool.write(i, threadPool.submit(
                             constructor.newInstance(
                                     this.configuration.getKuduNodes().get(i),
                                     this.configuration.getFetchInterval(),

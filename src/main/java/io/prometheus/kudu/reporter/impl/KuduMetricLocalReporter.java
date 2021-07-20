@@ -36,11 +36,11 @@ public class KuduMetricLocalReporter extends KuduMetricReporter {
                 new HashMap<String, List<MetricFamilySamples.Sample>>(1024);
 
         for (int i = configuration.getKuduNodes().size() - 1; i >= 0; i--) {
-            if (this.metricsPool.get(i) == null) {
+            if (this.metricsPool.read(i) == null) {
                 continue;
             }
 
-            for (Map<?, ?> metricsJson : this.metricsPool.get(i)) {
+            for (Map<?, ?> metricsJson : this.metricsPool.read(i)) {
                 if (metricsJson == null) {
                     continue;
                 }
