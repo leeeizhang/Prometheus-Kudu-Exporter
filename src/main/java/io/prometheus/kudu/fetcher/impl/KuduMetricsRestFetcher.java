@@ -9,10 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class KuduMetricsRestFetcher extends KuduMetricFetcher {
@@ -33,7 +30,7 @@ public class KuduMetricsRestFetcher extends KuduMetricFetcher {
     }
 
     @Override
-    protected List<Map<?, ?>> fetch() throws IOException {
+    protected List<Map<?, ?>> fetch() {
         try (InputStreamReader reader = new InputStreamReader(
                 this.kuduRestURL.openConnection().getInputStream(), RESPONSE_CHARSET)) {
             return this.gson.fromJson(reader, List.class);
@@ -42,7 +39,7 @@ public class KuduMetricsRestFetcher extends KuduMetricFetcher {
         } catch (IOException e) {
             logger.warning("Fetch Kudu Metric Rest API Failed for IOException.");
         }
-        return Arrays.asList(new HashMap<>());
+        return Collections.singletonList(new HashMap<>());
     }
 
 }

@@ -19,7 +19,7 @@ public class KuduMetricPushGatewayReporter extends KuduMetricLocalReporter {
             KuduExporterConfiguration configuration,
             KuduMetricsPool<List<Map<?, ?>>> metricsPool) throws Exception {
         super(configuration, metricsPool);
-        this.pushGateway = new PushGateway(configuration.getPushgatewayURL());
+        this.pushGateway = new PushGateway(configuration.getPushgatewayURL());//TODO: PushGateway Authentication Support
     }
 
     @Override
