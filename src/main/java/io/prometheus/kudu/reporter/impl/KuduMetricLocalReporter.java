@@ -8,10 +8,7 @@ import io.prometheus.kudu.util.LoggerUtils;
 import io.prometheus.kudu.util.MetricSampleTemplate;
 import io.prometheus.kudu.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
@@ -30,25 +27,20 @@ public class KuduMetricLocalReporter extends KuduMetricReporter {
         this.server = new HTTPServer(configuration.getLocalReporterPort(), true);
         this.template = MetricSampleTemplate.buildTemplate(SAMPLE_PREFIX, null,
                 configuration.getIncludeKeyword(), configuration.getExcludeKeyword());
-    }
-
-    @Override
-    public void start() throws Exception {
         this.register();
     }
 
     @Override
-    public List<MetricFamilySamples> collect() {
-        List<MetricFamilySamples> metricsResult = new ArrayList<>();
+    public Map<String, List<MetricFamilySamples.Sample>> report() {
+        Map<String, List<MetricFamilySamples.Sample>> metricFamilies =
+                new HashMap<String, List<MetricFamilySamples.Sample>>(1024);
 
         for (int i = configuration.getKuduNodes().size() - 1; i >= 0; i--) {
-
             if (this.metricsPool.get(i) == null) {
                 continue;
             }
 
             for (Map<?, ?> metricsJson : this.metricsPool.get(i)) {
-
                 if (metricsJson == null) {
                     continue;
                 }
@@ -79,7 +71,7 @@ public class KuduMetricLocalReporter extends KuduMetricReporter {
 
                     for (Object metric : (Collection<?>) metrics) {
 
-                        List<MetricFamilySamples.Sample> metricsSamples = new ArrayList<>();
+                        List<MetricFamilySamples.Sample> metricSamples = new ArrayList<>();
 
                         try {
                             String metricName = ((Map<?, ?>) metric).get("name").toString();
@@ -89,7 +81,7 @@ public class KuduMetricLocalReporter extends KuduMetricReporter {
                                 Object key = entry.getKey();
                                 Object value = entry.getValue();
 
-                                if (!key.toString().equals("name")) {
+                                if (!key.toString().equals("name") && value instanceof Number) {
 
                                     if (key.toString().equals("value")) {
                                         MetricFamilySamples.Sample sample = this.template.generate(
@@ -97,7 +89,7 @@ public class KuduMetricLocalReporter extends KuduMetricReporter {
                                                 Double.valueOf(value.toString())
                                         );
                                         if (sample != null) {
-                                            metricsSamples.add(sample);
+                                            metricSamples.add(sample);
                                         }
 
                                     } else {
@@ -108,32 +100,32 @@ public class KuduMetricLocalReporter extends KuduMetricReporter {
                                         );
 
                                         if (sample != null) {
-                                            metricsSamples.add(sample);
+                                            metricSamples.add(sample);
                                         }
-                                        
+
                                     }
                                 }
                             }
 
-                            if (metricsSamples.size() != 0) {
-                                metricsResult.add(new MetricFamilySamples(
-                                        metricName,
-                                        Type.INFO,
-                                        "help",
-                                        metricsSamples
-                                ));
+                            if (metricSamples.size() != 0) {
+                                if (!metricFamilies.containsKey(metricName)) {
+                                    metricFamilies.put(metricName, new ArrayList<>(64));
+                                }
+                                metricFamilies.get(metricName).addAll(metricSamples);
                             }
 
                         } catch (Exception e) {
                             logger.warning(e.toString());
                         }
+
                     }
 
                 }
             }
 
         }
-        return metricsResult;
+
+        return metricFamilies;
     }
 
 }
