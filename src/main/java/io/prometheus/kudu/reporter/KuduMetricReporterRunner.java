@@ -6,6 +6,8 @@ import io.prometheus.kudu.sink.KuduMetricsPool;
 import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 public class KuduMetricReporterRunner implements Runnable {
@@ -31,11 +33,15 @@ public class KuduMetricReporterRunner implements Runnable {
     @Override
     public void run() {
         try {
+            ExecutorService threadPool = Executors.newWorkStealingPool();
             Class reporterClass = Class.forName(configuration.getReporterClassname());
             Class[] parameterTypes = {KuduExporterConfiguration.class, KuduMetricsPool.class};
             Constructor<KuduMetricReporter> constructor = reporterClass.getConstructor(parameterTypes);
             KuduMetricReporter reporter = constructor.newInstance(this.configuration, this.metricsPool);
-            reporter.start();
+            while (true) {
+                reporter.run();
+                Thread.sleep(configuration.getPushInterval());
+            }
         } catch (Exception e) {
             logger.warning("Reporter Runner Meet Some Issues.");
         }
