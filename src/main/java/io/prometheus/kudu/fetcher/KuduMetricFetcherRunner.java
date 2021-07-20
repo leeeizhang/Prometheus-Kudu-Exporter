@@ -5,6 +5,7 @@ import io.prometheus.kudu.sink.KuduMetricsPool;
 import io.prometheus.kudu.util.LoggerUtils;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -34,10 +35,11 @@ public class KuduMetricFetcherRunner implements Runnable {
     @Override
     public void run() {
         try {
+            Constructor<? extends KuduMetricFetcher> constructor = Class
+                    .forName(configuration.getFetcherClassname())
+                    .asSubclass(KuduMetricFetcher.class)
+                    .getConstructor(String.class, Long.class, KuduExporterConfiguration.class);
             ExecutorService threadPool = Executors.newWorkStealingPool();
-            Class fetcherClass = Class.forName(configuration.getFetcherClassname());
-            Class[] parameterTypes = {String.class, Long.class, KuduExporterConfiguration.class};
-            Constructor<KuduMetricFetcher> constructor = fetcherClass.getConstructor(parameterTypes);
             while (true) {
                 for (int i = configuration.getKuduNodes().size() - 1; i >= 0; i--) {
                     this.metricsPool.put(i, threadPool.submit(
@@ -50,8 +52,13 @@ public class KuduMetricFetcherRunner implements Runnable {
                 }
                 Thread.sleep(configuration.getFetchInterval());
             }
-        } catch (Exception e) {
-            logger.warning("Fetcher Runner Meet Some Issues.");
+        } catch (ClassNotFoundException e) {
+            logger.warning("Fetcher class not founded.");
+        } catch (InterruptedException e) {
+            logger.warning("Fetcher thread running error.");
+        } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
+            logger.warning("Fetcher Inner fatal error for invocation target or method change.");
         }
     }
+
 }
