@@ -1,10 +1,10 @@
 package io.prometheus.kudu.fetcher.impl;
 
 import com.google.gson.Gson;
-import com.sun.org.slf4j.internal.Logger;
 import io.prometheus.kudu.config.KuduExporterConfiguration;
 import io.prometheus.kudu.fetcher.KuduMetricFetcher;
 import io.prometheus.kudu.util.LoggerUtils;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStreamReader;

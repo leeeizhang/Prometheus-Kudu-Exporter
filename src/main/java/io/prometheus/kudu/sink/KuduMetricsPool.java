@@ -1,7 +1,7 @@
 package io.prometheus.kudu.sink;
 
-import com.sun.org.slf4j.internal.Logger;
 import io.prometheus.kudu.util.LoggerUtils;
+import org.apache.logging.log4j.Logger;
 
 import java.io.Serializable;
 import java.util.Map;

@@ -1,9 +1,9 @@
 package io.prometheus.kudu.fetcher;
 
-import com.sun.org.slf4j.internal.Logger;
 import io.prometheus.kudu.config.KuduExporterConfiguration;
 import io.prometheus.kudu.sink.KuduMetricsPool;
 import io.prometheus.kudu.util.LoggerUtils;
+import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

@@ -1,8 +1,8 @@
 package io.prometheus.kudu.config;
 
-import com.sun.org.slf4j.internal.Logger;
 import io.prometheus.kudu.util.ArgsEntity;
 import io.prometheus.kudu.util.LoggerUtils;
+import org.apache.logging.log4j.Logger;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
@@ -92,7 +92,7 @@ public class KuduExporterConfiguration implements Serializable {
                                 this.fetcherClassname).toString()
                 );
             } catch (ClassNotFoundException e) {
-                logger.error("'fetcher-classname' cannot been found in 'kudu-exporter.yaml'.");
+                logger.error("'fetcher-classname' cannot been found in 'kudu-exporter.yml'.");
             }
 
             try {
@@ -102,7 +102,7 @@ public class KuduExporterConfiguration implements Serializable {
                                 this.reporterClassname).toString()
                 );
             } catch (ClassNotFoundException e) {
-                logger.error("'reporter-classname' cannot been found in 'kudu-exporter.yaml'.");
+                logger.error("'reporter-classname' cannot been found in 'kudu-exporter.yml'.");
             }
 
             try {
@@ -111,7 +111,7 @@ public class KuduExporterConfiguration implements Serializable {
                         this.kuduNodes
                 );
             } catch (Exception e) {
-                logger.error("'kudu-nodes' format mismatch in 'kudu-exporter.yaml'.");
+                logger.error("'kudu-nodes' format mismatch in 'kudu-exporter.yml'.");
             }
 
             try {
@@ -119,7 +119,7 @@ public class KuduExporterConfiguration implements Serializable {
                         "prom.kudu.metric.fetch-interval",
                         this.fetchInterval).toString());
             } catch (Exception e) {
-                logger.error("'fetch-interval' is not long value in 'kudu-exporter.yaml'.");
+                logger.error("'fetch-interval' is not long value in 'kudu-exporter.yml'.");
             }
 
             try {
@@ -127,7 +127,7 @@ public class KuduExporterConfiguration implements Serializable {
                         "prom.kudu.metric.pushgateway",
                         this.pushgatewayURL).toString();
             } catch (Exception e) {
-                logger.error("'pushgateway' value mismatched in 'kudu-exporter.yaml'.");
+                logger.error("'pushgateway' value mismatched in 'kudu-exporter.yml'.");
             }
 
             try {
@@ -135,7 +135,7 @@ public class KuduExporterConfiguration implements Serializable {
                         "prom.kudu.metric.reporter-port",
                         this.localReporterPort).toString());
             } catch (Exception e) {
-                logger.error("'reporter-port' is not integer value in 'kudu-exporter.yaml'.");
+                logger.error("'reporter-port' is not integer value in 'kudu-exporter.yml'.");
             }
 
             try {
@@ -143,7 +143,7 @@ public class KuduExporterConfiguration implements Serializable {
                         "prom.kudu.metric.push-interval",
                         this.pushInterval).toString());
             } catch (Exception e) {
-                logger.error("'push-interval' is not long value in 'kudu-exporter.yaml'.");
+                logger.error("'push-interval' is not long value in 'kudu-exporter.yml'.");
             }
         }
 

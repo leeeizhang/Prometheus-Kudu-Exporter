@@ -1,12 +1,12 @@
 package io.prometheus.kudu;
 
-import com.sun.org.slf4j.internal.Logger;
 import io.prometheus.kudu.config.KuduExporterConfiguration;
 import io.prometheus.kudu.fetcher.KuduMetricFetcherRunner;
 import io.prometheus.kudu.reporter.KuduMetricReporterRunner;
 import io.prometheus.kudu.sink.KuduMetricsPool;
 import io.prometheus.kudu.util.ArgsEntity;
 import io.prometheus.kudu.util.LoggerUtils;
+import org.apache.logging.log4j.Logger;
 import org.kohsuke.args4j.CmdLineParser;
 
 import java.util.List;
@@ -30,6 +30,9 @@ public class KuduExporter {
             // Start fetcher jobs and the reporter job by custom configuration
             KuduMetricFetcherRunner.run(configuration, metricsPool);
             KuduMetricReporterRunner.run(configuration, metricsPool);
+
+            logger.info("Prometheus-Kudu-Exporter in Running.");
+
         } catch (Exception e) {
             logger.warn(String.format("Running with Exception: %s", e.getCause()));
         }

@@ -1,6 +1,5 @@
 package io.prometheus.kudu.reporter.impl;
 
-import com.sun.org.slf4j.internal.Logger;
 import io.prometheus.client.exporter.HTTPServer;
 import io.prometheus.kudu.config.KuduExporterConfiguration;
 import io.prometheus.kudu.reporter.KuduMetricReporter;
@@ -8,6 +7,7 @@ import io.prometheus.kudu.sink.KuduMetricsPool;
 import io.prometheus.kudu.util.LoggerUtils;
 import io.prometheus.kudu.util.MetricSampleTemplate;
 import io.prometheus.kudu.util.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

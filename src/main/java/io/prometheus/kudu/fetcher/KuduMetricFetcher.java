@@ -1,8 +1,8 @@
 package io.prometheus.kudu.fetcher;
 
-import com.sun.org.slf4j.internal.Logger;
 import io.prometheus.kudu.config.KuduExporterConfiguration;
 import io.prometheus.kudu.util.LoggerUtils;
+import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.Map;

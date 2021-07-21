@@ -7,7 +7,7 @@ import java.util.Objects;
 
 public class ArgsEntity implements Serializable {
 
-    @Option(name = "-c", aliases = "--config", required = true, usage = "./conf/kudu-exporter.yaml")
+    @Option(name = "-c", aliases = "--config", required = true, usage = "./conf/kudu-exporter.yml")
     private String configPath;
 
     @Option(name = "-i", aliases = "--include", required = true, usage = "./conf/include-metrics")

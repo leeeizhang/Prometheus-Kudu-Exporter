@@ -1,14 +1,13 @@
 package io.prometheus.kudu.util;
 
-import com.sun.org.slf4j.internal.Logger;
-import com.sun.org.slf4j.internal.LoggerFactory;
-import io.prometheus.kudu.KuduExporter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 public class LoggerUtils {
 
     public static Logger Logger() {
-        return LoggerFactory.getLogger(KuduExporter.class);
+        return LogManager.getRootLogger();
     }
 
 }

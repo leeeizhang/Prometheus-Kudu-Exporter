@@ -1,10 +1,10 @@
 package io.prometheus.kudu.reporter;
 
-import com.sun.org.slf4j.internal.Logger;
 import io.prometheus.client.Collector;
 import io.prometheus.kudu.config.KuduExporterConfiguration;
 import io.prometheus.kudu.sink.KuduMetricsPool;
 import io.prometheus.kudu.util.LoggerUtils;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
