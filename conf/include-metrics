@@ -4,3 +4,9 @@ rows_deleted
 rows_inserted
 rows_updated
 rows_upserted
+generic_heap_size
+generic_current_allocated_bytes
+block_manager_total_bytes_written
+block_manager_total_bytes_read
+threads_running
+tablets_num_running
