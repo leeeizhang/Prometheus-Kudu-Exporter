@@ -40,7 +40,6 @@ public class KuduMetricFetcherRunner implements Runnable {
                     .forName(configuration.getFetcherClassname())
                     .asSubclass(KuduExporterTask.class)
                     .getConstructor(Integer.class, KuduExporterConfiguration.class, KuduMetricsPool.class);
-
             ExecutorService threadPool = Executors.newWorkStealingPool();
             while (true) {
                 for (int i = configuration.getKuduNodes().size() - 1; i >= 0; i--) {

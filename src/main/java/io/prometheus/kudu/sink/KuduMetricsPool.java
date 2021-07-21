@@ -76,4 +76,8 @@ public class KuduMetricsPool<T> implements Serializable {
         return result;
     }
 
+    public int size() {
+        return this.repoFuture.size();
+    }
+
 }

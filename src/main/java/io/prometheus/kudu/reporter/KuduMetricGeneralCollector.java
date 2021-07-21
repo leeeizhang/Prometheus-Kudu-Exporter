@@ -1,8 +1,8 @@
-package io.prometheus.kudu.reporter.impl;
+package io.prometheus.kudu.reporter;
 
+import io.prometheus.client.Collector;
 import io.prometheus.client.exporter.HTTPServer;
 import io.prometheus.kudu.config.KuduExporterConfiguration;
-import io.prometheus.kudu.reporter.KuduMetricReporter;
 import io.prometheus.kudu.sink.KuduMetricsPool;
 import io.prometheus.kudu.util.LoggerUtils;
 import io.prometheus.kudu.util.MetricSampleTemplate;
@@ -12,28 +12,27 @@ import org.apache.logging.log4j.Logger;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class KuduMetricLocalReporter extends KuduMetricReporter {
+public class KuduMetricGeneralCollector extends Collector {
     private static final Logger logger = LoggerUtils.Logger();
 
     private static final String SAMPLE_PREFIX = "kudu_";
 
-    private final HTTPServer server;
-    private final MetricSampleTemplate template;
+    protected final KuduExporterConfiguration configuration;
+    protected final KuduMetricsPool<List<Map<?, ?>>> metricsPool;
 
-    public KuduMetricLocalReporter(
+    public KuduMetricGeneralCollector(
             KuduExporterConfiguration configuration,
-            KuduMetricsPool<List<Map<?, ?>>> metricsPool) throws Exception {
-        super(configuration, metricsPool);
-        this.server = new HTTPServer(configuration.getLocalReporterPort(), true);
-        this.template = MetricSampleTemplate.buildTemplate(SAMPLE_PREFIX, null,
-                configuration.getIncludeKeyword(), configuration.getExcludeKeyword());
-        this.register();
+            KuduMetricsPool<List<Map<?, ?>>> metricsPool) {
+        this.configuration = configuration;
+        this.metricsPool = metricsPool;
     }
 
-    @Override
-    public Map<String, List<MetricFamilySamples.Sample>> report() {
+    public Map<String, List<MetricFamilySamples.Sample>> doCollect() {
         Map<String, List<MetricFamilySamples.Sample>> metricFamilies =
                 new HashMap<>(1024);
+
+        MetricSampleTemplate template = MetricSampleTemplate.buildTemplate(SAMPLE_PREFIX, null,
+                configuration.getIncludeKeyword(), configuration.getExcludeKeyword());
 
         for (int i = configuration.getKuduNodes().size() - 1; i >= 0; i--) {
             if (this.metricsPool.read(i) == null) {
@@ -62,7 +61,7 @@ public class KuduMetricLocalReporter extends KuduMetricReporter {
                         this.put("id", id.toString());
                     }
                     if (attributes instanceof Map) {
-                        for (Map.Entry<?, ?> attr : ((Map<?, ?>) attributes).entrySet()) {
+                        for (Entry<?, ?> attr : ((Map<?, ?>) attributes).entrySet()) {
                             if (!StringUtils.isEmpty(attr.getKey()) && !StringUtils.isEmpty(attr.getValue())) {
                                 this.put(attr.getKey().toString(), attr.getValue().toString());
                             }
@@ -88,7 +87,7 @@ public class KuduMetricLocalReporter extends KuduMetricReporter {
                                 if (!key.toString().equals("name") && value instanceof Number) {
 
                                     if (key.toString().equals("value")) {
-                                        MetricFamilySamples.Sample sample = this.template.generate(
+                                        MetricFamilySamples.Sample sample = template.generate(
                                                 metricName, labels,
                                                 Double.valueOf(value.toString())
                                         );
@@ -98,7 +97,7 @@ public class KuduMetricLocalReporter extends KuduMetricReporter {
 
                                     } else {
 
-                                        MetricFamilySamples.Sample sample = this.template.generate(
+                                        MetricFamilySamples.Sample sample = template.generate(
                                                 metricName.concat(key.toString()), labels,
                                                 Double.valueOf(value.toString())
                                         );
@@ -132,4 +131,17 @@ public class KuduMetricLocalReporter extends KuduMetricReporter {
         return metricFamilies;
     }
 
+    @Override
+    public List<MetricFamilySamples> collect() {
+        List<MetricFamilySamples> metricsResult = new ArrayList<>();
+        for (Map.Entry<String, List<MetricFamilySamples.Sample>> entry : doCollect().entrySet()) {
+            metricsResult.add(new MetricFamilySamples(
+                    entry.getKey(),
+                    Type.GAUGE,
+                    "",
+                    entry.getValue()
+            ));
+        }
+        return metricsResult;
+    }
 }

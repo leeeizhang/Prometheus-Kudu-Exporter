@@ -1,4 +1,4 @@
-package io.prometheus.kudu.reporter;
+package io.prometheus.kudu.task;
 
 import io.prometheus.kudu.config.KuduExporterConfiguration;
 import io.prometheus.kudu.sink.KuduMetricsPool;
@@ -33,13 +33,14 @@ public class KuduMetricReporterRunner implements Runnable {
     @Override
     public void run() {
         try {
-            Constructor<? extends KuduMetricReporter> constructor = Class
+            Constructor<? extends KuduExporterTask> constructor = Class
                     .forName(configuration.getReporterClassname())
-                    .asSubclass(KuduMetricReporter.class)
-                    .getConstructor(KuduExporterConfiguration.class, KuduMetricsPool.class);
-            KuduMetricReporter reporter = constructor.newInstance(this.configuration, this.metricsPool);
+                    .asSubclass(KuduExporterTask.class)
+                    .getConstructor(Integer.class, KuduExporterConfiguration.class, KuduMetricsPool.class);
+            KuduExporterTask reporter = constructor.newInstance(0, this.configuration, this.metricsPool);
+            reporter.start();
             while (true) {
-                reporter.run();
+                reporter.process();
                 Thread.sleep(configuration.getPushInterval());
             }
         } catch (ClassNotFoundException e) {
@@ -48,6 +49,7 @@ public class KuduMetricReporterRunner implements Runnable {
             logger.error(String.format("Reporter threads running fail (%s).", e.getCause()));
         } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
             logger.error("Reporter Inner fatal error for invocation target or method change.");
+        } catch (Exception e) {
         }
     }
 
