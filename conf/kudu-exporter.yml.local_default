@@ -1,6 +1,6 @@
 # Define the exporter classname
 prom.kudu.metric.fetcher-classname: io.prometheus.kudu.fetcher.KuduMetricsRestFetcher
-prom.kudu.metric.reporter-classname: io.prometheus.kudu.reporter.impl.KuduMetricLocalReporter
+prom.kudu.metric.reporter-classname: io.prometheus.kudu.reporter.KuduMetricLocalReporter
 
 # Define the fetcher configuration
 prom.kudu.metric.kudu-nodes: [ 127.0.0.1:8051, 127.0.0.1:8050 ]
