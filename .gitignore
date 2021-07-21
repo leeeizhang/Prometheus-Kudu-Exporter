@@ -1,3 +1,6 @@
+# conf
+*.yml
+
 #java
 *.class
 
