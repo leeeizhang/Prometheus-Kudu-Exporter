@@ -1,4 +1,4 @@
-package io.prometheus.kudu.fetcher;
+package io.prometheus.kudu.task;
 
 import io.prometheus.kudu.config.KuduExporterConfiguration;
 import io.prometheus.kudu.sink.KuduMetricsPool;
@@ -9,6 +9,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -35,20 +36,15 @@ public class KuduMetricFetcherRunner implements Runnable {
     @Override
     public void run() {
         try {
-            Constructor<? extends KuduMetricFetcher> constructor = Class
+            Constructor<? extends KuduExporterTask> constructor = Class
                     .forName(configuration.getFetcherClassname())
-                    .asSubclass(KuduMetricFetcher.class)
-                    .getConstructor(String.class, Long.class, KuduExporterConfiguration.class);
+                    .asSubclass(KuduExporterTask.class)
+                    .getConstructor(Integer.class, KuduExporterConfiguration.class, KuduMetricsPool.class);
+
             ExecutorService threadPool = Executors.newWorkStealingPool();
             while (true) {
                 for (int i = configuration.getKuduNodes().size() - 1; i >= 0; i--) {
-                    this.metricsPool.write(i, threadPool.submit(
-                            constructor.newInstance(
-                                    this.configuration.getKuduNodes().get(i),
-                                    this.configuration.getFetchInterval(),
-                                    this.configuration
-                            )
-                    ));
+                    threadPool.submit((Callable<?>) constructor.newInstance(i, this.configuration, this.metricsPool));
                 }
                 Thread.sleep(configuration.getFetchInterval());
             }
@@ -60,5 +56,6 @@ public class KuduMetricFetcherRunner implements Runnable {
             logger.error("Fetcher Inner fatal error for invocation target or method change.");
         }
     }
+
 
 }

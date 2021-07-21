@@ -14,13 +14,12 @@ public class KuduMetricsPool<T> implements Serializable {
 
     private static final Logger logger = LoggerUtils.Logger();
 
-    private final Map<Integer, Future<T>> repoFuture;
+    private final Map<Integer, T> repoFuture;
 
     private Integer readerCount;
     private Semaphore mutex;
     private Semaphore readerAndWriterMutex;
     private Semaphore writerMutex;
-
 
     private KuduMetricsPool() {
         this.repoFuture = new ConcurrentHashMap<>(1024);
@@ -34,16 +33,18 @@ public class KuduMetricsPool<T> implements Serializable {
         return new KuduMetricsPool<>();
     }
 
-    public void write(Integer id, Future<T> future) {
+    public T write(Integer id, T future) {
         try {
             writerMutex.acquire();
             readerAndWriterMutex.acquire();
             this.repoFuture.put(id, future);
             readerAndWriterMutex.release();
             writerMutex.release();
+            return future;
         } catch (InterruptedException e) {
             logger.warn("Read-Write lock in MetricPool Concurrency Control exception.");
         }
+        return null;
     }
 
     public T read(Integer id) {
@@ -59,7 +60,7 @@ public class KuduMetricsPool<T> implements Serializable {
             writerMutex.release();
 
             if (repoFuture.containsKey(id)) {
-                result = repoFuture.get(id).get();
+                result = repoFuture.get(id);
             }
 
             mutex.acquire();
@@ -71,8 +72,6 @@ public class KuduMetricsPool<T> implements Serializable {
 
         } catch (InterruptedException e) {
             logger.warn("Read-Write lock in MetricPool Concurrency Control exception.");
-        } catch (ExecutionException e) {
-            logger.warn("Cannot get metrics from MetricPool.");
         }
         return result;
     }

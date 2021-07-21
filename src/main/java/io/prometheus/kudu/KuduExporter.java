@@ -1,7 +1,7 @@
 package io.prometheus.kudu;
 
 import io.prometheus.kudu.config.KuduExporterConfiguration;
-import io.prometheus.kudu.fetcher.KuduMetricFetcherRunner;
+import io.prometheus.kudu.task.KuduMetricFetcherRunner;
 import io.prometheus.kudu.reporter.KuduMetricReporterRunner;
 import io.prometheus.kudu.sink.KuduMetricsPool;
 import io.prometheus.kudu.util.ArgsEntity;
