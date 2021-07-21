@@ -1,5 +1,6 @@
 package io.prometheus.kudu.fetcher;
 
+import com.sun.org.slf4j.internal.Logger;
 import io.prometheus.kudu.config.KuduExporterConfiguration;
 import io.prometheus.kudu.sink.KuduMetricsPool;
 import io.prometheus.kudu.util.LoggerUtils;
@@ -10,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Logger;
 
 public class KuduMetricFetcherRunner implements Runnable {
     private static final Logger logger = LoggerUtils.Logger();
@@ -53,11 +53,11 @@ public class KuduMetricFetcherRunner implements Runnable {
                 Thread.sleep(configuration.getFetchInterval());
             }
         } catch (ClassNotFoundException e) {
-            logger.warning("Fetcher class not founded.");
+            logger.error(String.format("Fetcher class %s cannot be found.", this.configuration.getFetcherClassname()));
         } catch (InterruptedException e) {
-            logger.warning("Fetcher thread running error.");
+            logger.error(String.format("Fetcher threads running fail (%s).", e.getCause()));
         } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
-            logger.warning("Fetcher Inner fatal error for invocation target or method change.");
+            logger.error("Fetcher Inner fatal error for invocation target or method change.");
         }
     }
 

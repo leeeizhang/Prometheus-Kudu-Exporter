@@ -1,12 +1,12 @@
 package io.prometheus.kudu.fetcher;
 
+import com.sun.org.slf4j.internal.Logger;
 import io.prometheus.kudu.config.KuduExporterConfiguration;
 import io.prometheus.kudu.util.LoggerUtils;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.logging.Logger;
 
 public abstract class KuduMetricFetcher implements Callable<List<Map<?, ?>>> {
     protected static final Logger logger = LoggerUtils.Logger();

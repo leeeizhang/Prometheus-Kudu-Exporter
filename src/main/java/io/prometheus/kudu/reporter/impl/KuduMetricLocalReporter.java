@@ -1,5 +1,6 @@
 package io.prometheus.kudu.reporter.impl;
 
+import com.sun.org.slf4j.internal.Logger;
 import io.prometheus.client.exporter.HTTPServer;
 import io.prometheus.kudu.config.KuduExporterConfiguration;
 import io.prometheus.kudu.reporter.KuduMetricReporter;
@@ -10,7 +11,6 @@ import io.prometheus.kudu.util.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
 
 public class KuduMetricLocalReporter extends KuduMetricReporter {
     private static final Logger logger = LoggerUtils.Logger();
@@ -33,7 +33,7 @@ public class KuduMetricLocalReporter extends KuduMetricReporter {
     @Override
     public Map<String, List<MetricFamilySamples.Sample>> report() {
         Map<String, List<MetricFamilySamples.Sample>> metricFamilies =
-                new HashMap<String, List<MetricFamilySamples.Sample>>(1024);
+                new HashMap<>(1024);
 
         for (int i = configuration.getKuduNodes().size() - 1; i >= 0; i--) {
             if (this.metricsPool.read(i) == null) {
@@ -49,8 +49,12 @@ public class KuduMetricLocalReporter extends KuduMetricReporter {
                 Object id = metricsJson.get("id");
                 Object attributes = metricsJson.get("attributes");
                 Object metrics = metricsJson.get("metrics");
+                Object hostIP = configuration.getKuduNodes().get(i);
 
                 Map<String, String> labels = new ConcurrentHashMap<String, String>(32) {{
+                    if (!StringUtils.isEmpty(hostIP)) {
+                        this.put("host_ip", hostIP.toString());
+                    }
                     if (!StringUtils.isEmpty(type)) {
                         this.put("type", type.toString());
                     }
@@ -115,7 +119,7 @@ public class KuduMetricLocalReporter extends KuduMetricReporter {
                             }
 
                         } catch (Exception e) {
-                            logger.warning(e.toString());
+                            logger.warn(String.format("Reporter meet issues %s.", e.getCause()));
                         }
 
                     }

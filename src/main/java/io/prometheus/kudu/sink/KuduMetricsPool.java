@@ -1,5 +1,6 @@
 package io.prometheus.kudu.sink;
 
+import com.sun.org.slf4j.internal.Logger;
 import io.prometheus.kudu.util.LoggerUtils;
 
 import java.io.Serializable;
@@ -8,7 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
-import java.util.logging.Logger;
 
 public class KuduMetricsPool<T> implements Serializable {
 
@@ -30,8 +30,8 @@ public class KuduMetricsPool<T> implements Serializable {
         writerMutex = new Semaphore(1);
     }
 
-    public static <T> KuduMetricsPool build() throws Exception {
-        return new KuduMetricsPool<T>();
+    public static <T> KuduMetricsPool<T> build() {
+        return new KuduMetricsPool<>();
     }
 
     public void write(Integer id, Future<T> future) {
@@ -42,6 +42,7 @@ public class KuduMetricsPool<T> implements Serializable {
             readerAndWriterMutex.release();
             writerMutex.release();
         } catch (InterruptedException e) {
+            logger.warn("Read-Write lock in MetricPool Concurrency Control exception.");
         }
     }
 
@@ -68,7 +69,10 @@ public class KuduMetricsPool<T> implements Serializable {
             }
             mutex.release();
 
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
+            logger.warn("Read-Write lock in MetricPool Concurrency Control exception.");
+        } catch (ExecutionException e) {
+            logger.warn("Cannot get metrics from MetricPool.");
         }
         return result;
     }

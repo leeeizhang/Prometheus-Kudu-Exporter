@@ -1,5 +1,6 @@
 package io.prometheus.kudu;
 
+import com.sun.org.slf4j.internal.Logger;
 import io.prometheus.kudu.config.KuduExporterConfiguration;
 import io.prometheus.kudu.fetcher.KuduMetricFetcherRunner;
 import io.prometheus.kudu.reporter.KuduMetricReporterRunner;
@@ -10,7 +11,6 @@ import org.kohsuke.args4j.CmdLineParser;
 
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 public class KuduExporter {
 
@@ -25,13 +25,13 @@ public class KuduExporter {
 
             // Build configuration and metric pool
             KuduExporterConfiguration configuration = KuduExporterConfiguration.getFromConfiguration(argsEntity);
-            KuduMetricsPool<List<Map<?, ?>>> metricsPool = KuduMetricsPool.<List<Map<?, ?>>>build();
+            KuduMetricsPool<List<Map<?, ?>>> metricsPool = KuduMetricsPool.build();
 
             // Start fetcher jobs and the reporter job by custom configuration
             KuduMetricFetcherRunner.run(configuration, metricsPool);
             KuduMetricReporterRunner.run(configuration, metricsPool);
         } catch (Exception e) {
-            logger.warning(String.format("Running with Exception: %s", e.getMessage()));
+            logger.warn(String.format("Running with Exception: %s", e.getCause()));
         }
     }
 

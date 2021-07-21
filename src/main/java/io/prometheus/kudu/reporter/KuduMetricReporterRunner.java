@@ -1,17 +1,18 @@
 package io.prometheus.kudu.reporter;
 
+import com.sun.org.slf4j.internal.Logger;
 import io.prometheus.kudu.config.KuduExporterConfiguration;
 import io.prometheus.kudu.fetcher.KuduMetricFetcher;
 import io.prometheus.kudu.sink.KuduMetricsPool;
+import io.prometheus.kudu.util.LoggerUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 public class KuduMetricReporterRunner implements Runnable {
-    private static final Logger logger = Logger.getLogger(KuduMetricReporterRunner.class.getName());
+    private static final Logger logger = LoggerUtils.Logger();
 
     private final KuduExporterConfiguration configuration;
     private final KuduMetricsPool<List<Map<?, ?>>> metricsPool;
@@ -43,11 +44,11 @@ public class KuduMetricReporterRunner implements Runnable {
                 Thread.sleep(configuration.getPushInterval());
             }
         } catch (ClassNotFoundException e) {
-            logger.warning("Reporter class not founded.");
+            logger.error(String.format("Reporter class %s cannot be found.", this.configuration.getReporterClassname()));
         } catch (InterruptedException e) {
-            logger.warning("Reporter thread running error.");
+            logger.error(String.format("Reporter threads running fail (%s).", e.getCause()));
         } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
-            logger.warning("Reporter Inner fatal error for invocation target or method change.");
+            logger.error("Reporter Inner fatal error for invocation target or method change.");
         }
     }
 

@@ -1,5 +1,6 @@
 package io.prometheus.kudu.config;
 
+import com.sun.org.slf4j.internal.Logger;
 import io.prometheus.kudu.util.ArgsEntity;
 import io.prometheus.kudu.util.LoggerUtils;
 import org.yaml.snakeyaml.Yaml;
@@ -9,14 +10,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.*;
-import java.util.logging.Logger;
 
 public class KuduExporterConfiguration implements Serializable {
     private static final Logger logger = LoggerUtils.Logger();
 
     private static final String FETCHER_CLASSNAME = "io.prometheus.kudu.fetcher.KuduMetricsLocalReporter";
     private static final String REPORTER_CLASSNAME = "io.prometheus.kudu.reporter.KuduMetricsLocalReporter";
-    private static final String PUSH_GATEWAY_URL = "http://127.0.0.1:9092/metrics";
+    private static final String PUSH_GATEWAY_URL = "http://127.0.0.1:9091/metrics";
     private static final Integer LOCAL_REPORTER_PORT = 9055;
     private static final Long FETCH_INTERVAL = 3000L;
     private static final Long PUSH_INTERVAL = 5000L;
@@ -92,7 +92,7 @@ public class KuduExporterConfiguration implements Serializable {
                                 this.fetcherClassname).toString()
                 );
             } catch (ClassNotFoundException e) {
-                logger.warning("fetcher-classname cannot been found.");
+                logger.error("'fetcher-classname' cannot been found in 'kudu-exporter.yaml'.");
             }
 
             try {
@@ -102,7 +102,7 @@ public class KuduExporterConfiguration implements Serializable {
                                 this.reporterClassname).toString()
                 );
             } catch (ClassNotFoundException e) {
-                logger.warning("reporter-classname cannot been found.");
+                logger.error("'reporter-classname' cannot been found in 'kudu-exporter.yaml'.");
             }
 
             try {
@@ -111,7 +111,7 @@ public class KuduExporterConfiguration implements Serializable {
                         this.kuduNodes
                 );
             } catch (Exception e) {
-                logger.warning("kudu-nodes format mismatch.");
+                logger.error("'kudu-nodes' format mismatch in 'kudu-exporter.yaml'.");
             }
 
             try {
@@ -119,7 +119,7 @@ public class KuduExporterConfiguration implements Serializable {
                         "prom.kudu.metric.fetch-interval",
                         this.fetchInterval).toString());
             } catch (Exception e) {
-                logger.warning("fetch-interval is not long value.");
+                logger.error("'fetch-interval' is not long value in 'kudu-exporter.yaml'.");
             }
 
             try {
@@ -127,7 +127,7 @@ public class KuduExporterConfiguration implements Serializable {
                         "prom.kudu.metric.pushgateway",
                         this.pushgatewayURL).toString();
             } catch (Exception e) {
-                logger.warning("pushgateway value mismatched.");
+                logger.error("'pushgateway' value mismatched in 'kudu-exporter.yaml'.");
             }
 
             try {
@@ -135,7 +135,7 @@ public class KuduExporterConfiguration implements Serializable {
                         "prom.kudu.metric.reporter-port",
                         this.localReporterPort).toString());
             } catch (Exception e) {
-                logger.warning("reporter-port is not integer value.");
+                logger.error("'reporter-port' is not integer value in 'kudu-exporter.yaml'.");
             }
 
             try {
@@ -143,7 +143,7 @@ public class KuduExporterConfiguration implements Serializable {
                         "prom.kudu.metric.push-interval",
                         this.pushInterval).toString());
             } catch (Exception e) {
-                logger.warning("push-interval is not long value.");
+                logger.error("'push-interval' is not long value in 'kudu-exporter.yaml'.");
             }
         }
 
@@ -151,7 +151,7 @@ public class KuduExporterConfiguration implements Serializable {
             try {
                 this.includeKeyword = includeMetrics;
             } catch (Exception e) {
-                logger.warning("include-metrics meet mismatch issue.");
+                logger.error("'include-metrics' cannot be parsed.");
             }
         }
 
@@ -159,7 +159,7 @@ public class KuduExporterConfiguration implements Serializable {
             try {
                 this.excludeKeyword = excludeMetrics;
             } catch (Exception e) {
-                logger.warning("exclude-metrics meet mismatch issue.");
+                logger.error("'exclude-metrics' cannot be parsed.");
             }
         }
 
