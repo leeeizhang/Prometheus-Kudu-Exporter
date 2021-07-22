@@ -6,8 +6,8 @@
 
     <groupId>io.prometheus</groupId>
     <artifactId>prometheus-kudu-exportor</artifactId>
-    <version>1.0.0</version>
-    <url>http://github.com/magicdevilzhang/prometheus-kudu-exporter</url>
+    <version>0.1.0</version>
+    <url>https://github.com/magicdevilzhang/prometheus-kudu-exporter</url>
     <description>Kudu Metrics Exporter for Prometheus.</description>
 
     <licenses>
@@ -60,7 +60,6 @@
         <finalName>${project.artifactId}-${project.version}</finalName>
         <testOutputDirectory>${project.build.directory}/test-classes</testOutputDirectory>
         <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
-        <testSourceDirectory>${project.basedir}/src/test/java</testSourceDirectory>
         <resources>
             <resource>
                 <directory>${project.basedir}/src/main/resources</directory>
