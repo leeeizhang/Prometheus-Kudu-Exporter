@@ -1,6 +1,6 @@
 # Prometheus-Kudu-Exporter
 
-[![license](https://img.shields.io/github/license/ContainerSolutions/locust_exporter.svg)](https://github.com/magicdevilzhang/prometheus-kudu-exporter/master/LICENSE) ![stars](https://img.shields.io/github/stars/magicdevilzhang/prometheus-kudu-exporter) ![size](https://img.shields.io/github/size/magicdevilzhang/prometheus-kudu-exporter/src)
+![license](https://img.shields.io/github/license/ContainerSolutions/locust_exporter.svg) ![stars](https://img.shields.io/github/stars/magicdevilzhang/prometheus-kudu-exporter) ![size](https://img.shields.io/github/repo-size/magicdevilzhang/prometheus-kudu-exporter?color=orange&label=size)
 
 Kudu Exporter, fetching metrics by multi-thread from [Kudu Rest API](https://kudu.apache.org/docs/administration.html#_collecting_metrics_via_http) and reporting them by standalone or push-gateway, can be applied high-availably for Prometheus.
 
