@@ -5,15 +5,15 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.prometheus</groupId>
-    <artifactId>prometheus-kudu-exportor</artifactId>
-    <version>0.1.0</version>
+    <artifactId>prometheus-kudu-exporter</artifactId>
+    <version>0.2.0</version>
     <url>https://github.com/magicdevilzhang/prometheus-kudu-exporter</url>
     <description>Kudu Metrics Exporter for Prometheus.</description>
 
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </licenses>
 
@@ -27,7 +27,7 @@
     <repositories>
         <repository>
             <id>maven-public</id>
-            <url>http://repo1.maven.org/maven2/</url>
+            <url>https://repo1.maven.org/maven2/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -60,6 +60,7 @@
         <finalName>${project.artifactId}-${project.version}</finalName>
         <testOutputDirectory>${project.build.directory}/test-classes</testOutputDirectory>
         <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
+        <testSourceDirectory>${project.basedir}/src/test/java</testSourceDirectory>
         <resources>
             <resource>
                 <directory>${project.basedir}/src/main/resources</directory>
