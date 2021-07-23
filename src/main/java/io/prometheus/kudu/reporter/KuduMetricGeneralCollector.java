@@ -1,3 +1,19 @@
+/*
+ * Copyright RyanCheung98@163.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.prometheus.kudu.reporter;
 
 import io.prometheus.client.Collector;
@@ -8,27 +24,44 @@ import io.prometheus.kudu.util.MetricSampleTemplate;
 import io.prometheus.kudu.util.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Collector as general class to parser json to metrics
+ */
 public class KuduMetricGeneralCollector extends Collector {
-    private static final Logger logger = LoggerUtils.Logger();
+    protected static final Logger logger = LoggerUtils.Logger();
 
     private static final String SAMPLE_PREFIX = "kudu_";
 
     protected final KuduExporterConfiguration configuration;
-    protected final KuduMetricPool<List<Map<?, ?>>> metricsPool;
+    protected final KuduMetricPool<List<Map<?, ?>>> metricPool;
 
+    /**
+     * Constructor to init the Collector
+     *
+     * @param configuration exporter configuration
+     * @param metricPool    metric pool to get metric resources
+     */
     public KuduMetricGeneralCollector(
             KuduExporterConfiguration configuration,
-            KuduMetricPool<List<Map<?, ?>>> metricsPool) {
+            KuduMetricPool<List<Map<?, ?>>> metricPool) {
         this.configuration = configuration;
-        this.metricsPool = metricsPool;
+        this.metricPool = metricPool;
     }
 
+    /**
+     * Run collect to read pool metric resource and generate metric samples
+     *
+     * @return the key of map is label, value are metric list
+     */
     public Map<String, List<MetricFamilySamples.Sample>> doCollect() {
         Map<String, List<MetricFamilySamples.Sample>> metricFamilies =
-                new HashMap<>(1024);
+                new ConcurrentHashMap<>(1 << 16);
 
         MetricSampleTemplate template = MetricSampleTemplate.buildTemplate(
                 SAMPLE_PREFIX,
@@ -38,11 +71,11 @@ public class KuduMetricGeneralCollector extends Collector {
         );
 
         for (int i = configuration.getFetcherKuduNodes().size() - 1; i >= 0; i--) {
-            if (this.metricsPool.read(i) == null) {
+            if (this.metricPool.read(i) == null) {
                 continue;
             }
 
-            for (Map<?, ?> metricsJson : this.metricsPool.read(i)) {
+            for (Map<?, ?> metricsJson : this.metricPool.read(i)) {
                 if (metricsJson == null) {
                     continue;
                 }
@@ -121,7 +154,9 @@ public class KuduMetricGeneralCollector extends Collector {
                             }
 
                         } catch (Exception e) {
-                            logger.warn(String.format("Reporter meet issues %s.", e.getCause()));
+                            logger.warn("collector error.", e);
+                        } finally {
+                            logger.debug("collector parser json to metric error done.");
                         }
 
                     }
@@ -134,6 +169,11 @@ public class KuduMetricGeneralCollector extends Collector {
         return metricFamilies;
     }
 
+    /**
+     * override collect function
+     *
+     * @return metric sample lists
+     */
     @Override
     public List<MetricFamilySamples> collect() {
         List<MetricFamilySamples> metricsResult = new ArrayList<>();
