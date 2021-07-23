@@ -24,6 +24,7 @@ import io.prometheus.kudu.task.KuduExporterTask;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +58,7 @@ public class KuduMetricRestFetcher extends KuduExporterTask<List<Map<?, ?>>> {
      * @throws Exception
      */
     @Override
-    protected void start() throws Exception {
+    protected void start() {
         try {
             StringBuilder includeMetricStr = new StringBuilder();
             for (int i = configuration.getMetricIncludeKeys().size() - 1; i >= 0; i--) {
@@ -69,6 +70,8 @@ public class KuduMetricRestFetcher extends KuduExporterTask<List<Map<?, ?>>> {
                     includeMetricStr
             ));
             gson = new Gson();
+        } catch (MalformedURLException e) {
+            logger.warn("malformed url for getting content.", e);
         } finally {
             logger.info(String.format("rest fetcher-%d start.", threadID));
         }
