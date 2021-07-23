@@ -49,8 +49,6 @@ public class KuduMetricLocalReporter extends KuduExporterTask<List<Map<?, ?>>> {
 
     /**
      * Generate the HttpServer and Collector, register self in Standalone HttpServer
-     *
-     * @throws Exception
      */
     @Override
     protected void start() {
