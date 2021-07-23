@@ -58,6 +58,8 @@ public class KuduMetricLocalReporter extends KuduExporterTask<List<Map<?, ?>>> {
             this.kuduMetricCollector.register();
         } catch (IOException e) {
             logger.warn("standalone reporter http server start error.", e);
+        } finally {
+            logger.info("local reporter start.");
         }
     }
 
@@ -66,6 +68,10 @@ public class KuduMetricLocalReporter extends KuduExporterTask<List<Map<?, ?>>> {
      */
     @Override
     protected void process() {
+        try {
+        } finally {
+            logger.debug("local reporter processed.");
+        }
     }
 
     /**
@@ -73,7 +79,11 @@ public class KuduMetricLocalReporter extends KuduExporterTask<List<Map<?, ?>>> {
      */
     @Override
     protected void stop() {
-        httpServer.stop();
+        try {
+            httpServer.stop();
+        } finally {
+            logger.info("local reporter stop.");
+        }
     }
 
 }

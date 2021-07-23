@@ -58,6 +58,8 @@ public class KuduMetricPushGatewayReporter extends KuduExporterTask<List<Map<?, 
             this.pushGateway.push(kuduMetricCollector, "kudu");
         } catch (IOException e) {
             logger.warn("push-gateway reporter start error.", e);
+        } finally {
+            logger.info("push-gateway reporter start.");
         }
     }
 
@@ -70,6 +72,8 @@ public class KuduMetricPushGatewayReporter extends KuduExporterTask<List<Map<?, 
             this.pushGateway.push(kuduMetricCollector, "kudu");
         } catch (IOException e) {
             logger.warn("fail to report metrics to push-gateway.", e);
+        } finally {
+            logger.debug("push-gateway reporter processed.");
         }
     }
 
@@ -78,6 +82,7 @@ public class KuduMetricPushGatewayReporter extends KuduExporterTask<List<Map<?, 
      */
     @Override
     protected void stop() {
+        logger.info("push-gateway reporter stop.");
     }
 
 }
