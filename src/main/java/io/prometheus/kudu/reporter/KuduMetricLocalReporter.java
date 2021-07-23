@@ -11,33 +11,31 @@ import org.apache.logging.log4j.Logger;
 import java.util.List;
 import java.util.Map;
 
-public class KuduMetricLocalReporter extends KuduExporterTask<Void> {
-    private static final Logger logger = LoggerUtils.Logger();
-
+public class KuduMetricLocalReporter extends KuduExporterTask<List<Map<?, ?>>> {
     private Collector kuduMetricCollector;
     private HTTPServer httpServer;
 
     public KuduMetricLocalReporter(
             Integer threadID,
             KuduExporterConfiguration configuration,
-            KuduMetricsPool<List<Map<?, ?>>> metricsPool) {
-        super(threadID, configuration, metricsPool);
+            KuduMetricsPool<List<Map<?, ?>>> metricPool) {
+        super(threadID, configuration, metricPool);
     }
 
     @Override
     protected void start() throws Exception {
-        this.kuduMetricCollector = new KuduMetricGeneralCollector(configuration, metricsPool);
+        this.kuduMetricCollector = new KuduMetricGeneralCollector(configuration, metricPool);
         this.httpServer = new HTTPServer(configuration.getLocalReporterPort(), true);
         this.kuduMetricCollector.register();
     }
 
     @Override
-    protected Void process() {
-        return null;
+    protected void process() {
     }
 
     @Override
     protected void stop() {
+        httpServer.stop();
     }
 
 }
