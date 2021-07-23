@@ -1,6 +1,13 @@
+# Fetcher Configuration
 prom.kudu.fetcher.classname: io.prometheus.kudu.fetcher.KuduMetricRestFetcher
-prom.kudu.fetcher.kudu-nodes: [ 172.24.10.2:8051, 172.24.10.3:8050, 172.24.10.4:8050, 172.24.10.5:8050 ]
+prom.kudu.fetcher.kudu-nodes: [ 127.0.0.1:8050 ]
 prom.kudu.fetcher.interval: 10000
 
+# Standalone Reporter Configuration
 prom.kudu.reporter.classname: io.prometheus.kudu.reporter.KuduMetricLocalReporter
-prom.kudu.reporter.local.port: 9066
+prom.kudu.reporter.local.port: 9055
+
+# Push-Gateway Reporter Configuration
+#prom.kudu.reporter.classname: io.prometheus.kudu.reporter.KuduMetricPushGatewayReporter
+#prom.kudu.reporter.pushgateway.host: 127.0.0.1:9091
+#prom.kudu.reporter.pushgateway.interval: 10000
