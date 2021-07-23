@@ -45,7 +45,7 @@ Here is some examples to configure report method in Kudu Exporter by create or e
 
 ```yaml
 # Define the exporter classname
-prom.kudu.metric.fetcher-classname: io.prometheus.kudu.fetcher.KuduMetricsRestFetcher
+prom.kudu.metric.fetcher-classname: io.prometheus.kudu.fetcher.KuduMetricRestFetcher
 prom.kudu.metric.reporter-classname: io.prometheus.kudu.reporter.KuduMetricLocalReporter
 
 # Define the fetcher configuration
@@ -60,7 +60,7 @@ prom.kudu.metric.reporter-port: 9055
 
 ```yaml
 # Define the exporter classname
-prom.kudu.metric.fetcher-classname: io.prometheus.kudu.fetcher.KuduMetricsRestFetcher
+prom.kudu.metric.fetcher-classname: io.prometheus.kudu.fetcher.KuduMetricRestFetcher
 prom.kudu.metric.reporter-classname: io.prometheus.kudu.reporter.KuduMetricPushGatewayReporter
 
 # Define the fetcher configuration
@@ -108,7 +108,7 @@ Further more, the meaning of `./conf/kudu-exporter.yml` is as following list.
 
 |              parameter              |     type     |                       default                       |                            detail                            |
 | :---------------------------------: | :----------: | :-------------------------------------------------: | :----------------------------------------------------------: |
-| prom.kudu.metric.fetcher-classname  |    string    |  io.prometheus.kudu.fetcher.KuduMetricsRestFetcher  | Fetcher aim at getting metrics from kudu. No more fetchers supported currently. |
+| prom.kudu.metric.fetcher-classname  |    string    |  io.prometheus.kudu.fetcher.KuduMetricRestFetcher  | Fetcher aim at getting metrics from kudu. No more fetchers supported currently. |
 | prom.kudu.metric.reporter-classname |    string    | io.prometheus.kudu.reporter.KuduMetricLocalReporter |         [Standalone / Push-Gateway](#Configuration)          |
 |     prom.kudu.metric.kudu-nodes     | list(string) |                        null                         |         Try visit http://ip:port/metrics to verify.          |
 |   prom.kudu.metric.fetch-interval   |     long     |                     10000 (ms)                      |         Fetcher take this as a cycle to get metrics.         |

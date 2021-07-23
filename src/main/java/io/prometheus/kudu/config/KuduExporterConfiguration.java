@@ -16,7 +16,7 @@
 
 package io.prometheus.kudu.config;
 
-import io.prometheus.kudu.fetcher.KuduMetricsRestFetcher;
+import io.prometheus.kudu.fetcher.KuduMetricRestFetcher;
 import io.prometheus.kudu.reporter.KuduMetricLocalReporter;
 import io.prometheus.kudu.util.ArgsEntity;
 import io.prometheus.kudu.util.LoggerUtils;
@@ -56,7 +56,7 @@ public class KuduExporterConfiguration implements Serializable {
     public static final List<String> METRIC_INCLUDE_DEFAULT = Collections.singletonList("");
     public static final List<String> METRIC_EXCLUDE_DEFAULT = Collections.singletonList("");
 
-    public static final String FETCHER_CLASSNAME_DEFAULT = KuduMetricsRestFetcher.class.getName();
+    public static final String FETCHER_CLASSNAME_DEFAULT = KuduMetricRestFetcher.class.getName();
     public static final List<String> FETCHER_KUDU_NODES_DEFAULT = Collections.singletonList("127.0.0.1:8050");
     public static final Integer FETCHER_INTERVAL_DEFAULT = 10000;
 
