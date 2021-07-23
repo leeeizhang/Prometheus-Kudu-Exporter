@@ -1,3 +1,19 @@
+/*
+ * Copyright RyanCheung98@163.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.prometheus.kudu.task;
 
 import io.prometheus.kudu.config.KuduExporterConfiguration;
@@ -12,26 +28,44 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * Fetcher runner as multi-threads
+ */
 public class KuduMetricFetcherRunner implements Runnable {
     private static final Logger logger = LoggerUtils.Logger();
 
     private final KuduExporterConfiguration configuration;
-    private final KuduMetricPool<List<Map<?, ?>>> metricsPool;
+    private final KuduMetricPool<List<Map<?, ?>>> metricPool;
 
+    /**
+     * Private Constructor to init the runner
+     *
+     * @param configuration exporter configuration
+     * @param metricPool    Concurrent-limited pool to store metric resources
+     */
     private KuduMetricFetcherRunner(
             KuduExporterConfiguration configuration,
-            KuduMetricPool<List<Map<?, ?>>> metricsPool) {
+            KuduMetricPool<List<Map<?, ?>>> metricPool) {
         this.configuration = configuration;
-        this.metricsPool = metricsPool;
+        this.metricPool = metricPool;
     }
 
+    /**
+     * Build instance and run as a thread
+     *
+     * @param configuration exporter configuration
+     * @param metricPool    Concurrent-limited pool to store metric resources
+     */
     public static void run(
             KuduExporterConfiguration configuration,
-            KuduMetricPool<List<Map<?, ?>>> metricsPool) {
-        Thread thread = new Thread(new KuduMetricFetcherRunner(configuration, metricsPool));
+            KuduMetricPool<List<Map<?, ?>>> metricPool) {
+        Thread thread = new Thread(new KuduMetricFetcherRunner(configuration, metricPool));
         thread.start();
     }
 
+    /**
+     * Override the abstract function of Runnable to run fetcher task
+     */
     @Override
     public void run() {
         try {
@@ -42,18 +76,17 @@ public class KuduMetricFetcherRunner implements Runnable {
             ExecutorService threadPool = Executors.newWorkStealingPool();
             while (true) {
                 for (int i = configuration.getFetcherKuduNodes().size() - 1; i >= 0; i--) {
-                    threadPool.submit(constructor.newInstance(i, this.configuration, this.metricsPool));
+                    threadPool.submit(constructor.newInstance(i, this.configuration, this.metricPool));
                 }
                 Thread.sleep(configuration.getFetcherInterval());
             }
         } catch (ClassNotFoundException e) {
-            logger.error(String.format("Fetcher class %s cannot be found.", this.configuration.getFetcherClassName()));
+            logger.error("fetcher class not be found.", e);
         } catch (InterruptedException e) {
-            logger.error(String.format("Fetcher threads running fail (%s).", e.getCause()));
+            logger.error("fetcher threads running fail.", e);
         } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
-            logger.error("Fetcher Inner fatal error for invocation target or method change.");
+            logger.error("fetcher inner fatal error for invocation target or method change.", e);
         }
     }
-
 
 }
