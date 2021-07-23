@@ -43,8 +43,8 @@ public class KuduMetricsRestFetcher extends KuduExporterTask<List<Map<?, ?>>> {
     protected void start() throws Exception {
         kuduRestURL = new URL(
                 String.format("http://%s/metrics?compact=1&metrics=%s",
-                        configuration.getKuduNodes().get(threadID),
-                        getIncludedMetricsStr(configuration.getIncludeKeyword()))
+                        configuration.getFetcherKuduNodes().get(threadID),
+                        getIncludedMetricsStr(configuration.getMetricIncludeKeys()))
         );
         gson = new Gson();
     }

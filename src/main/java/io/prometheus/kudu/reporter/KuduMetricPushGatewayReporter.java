@@ -27,7 +27,7 @@ public class KuduMetricPushGatewayReporter extends KuduExporterTask<Void> {
     @Override
     protected void start() throws Exception {
         this.kuduMetricCollector = new KuduMetricGeneralCollector(configuration, metricsPool);
-        this.pushGateway = new PushGateway(configuration.getPushgatewayURL());
+        this.pushGateway = new PushGateway(configuration.getPushGatewayReporterHost());
         this.pushGateway.push(kuduMetricCollector, "kudu");
     }
 

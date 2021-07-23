@@ -34,17 +34,17 @@ public class KuduMetricReporterRunner implements Runnable {
     public void run() {
         try {
             Constructor<? extends KuduExporterTask> constructor = Class
-                    .forName(configuration.getReporterClassname())
+                    .forName(configuration.getReporterClassName())
                     .asSubclass(KuduExporterTask.class)
                     .getConstructor(Integer.class, KuduExporterConfiguration.class, KuduMetricsPool.class);
             KuduExporterTask reporter = constructor.newInstance(0, this.configuration, this.metricsPool);
             reporter.start();
             while (true) {
                 reporter.process();
-                Thread.sleep(configuration.getPushInterval());
+                Thread.sleep(configuration.getPushGatewayReporterInterval());
             }
         } catch (ClassNotFoundException e) {
-            logger.error(String.format("Reporter class %s cannot be found.", this.configuration.getReporterClassname()));
+            logger.error(String.format("Reporter class %s cannot be found.", this.configuration.getReporterClassName()));
         } catch (InterruptedException e) {
             logger.error(String.format("Reporter threads running fail (%s).", e.getCause()));
         } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {

@@ -24,7 +24,7 @@ public class KuduExporter {
             }};
 
             // Build configuration and metric pool
-            KuduExporterConfiguration configuration = KuduExporterConfiguration.getFromConfiguration(argsEntity);
+            KuduExporterConfiguration configuration = KuduExporterConfiguration.getConfiguration(argsEntity);
             KuduMetricsPool<List<Map<?, ?>>> metricsPool = KuduMetricsPool.build();
 
             // Start fetcher jobs and the reporter job by custom configuration

@@ -1,12 +1,6 @@
-# Define the exporter classname
-prom.kudu.metric.fetcher-classname: io.prometheus.kudu.fetcher.KuduMetricsRestFetcher
-prom.kudu.metric.reporter-classname: io.prometheus.kudu.reporter.KuduMetricPushGatewayReporter
+prom.kudu.fetcher.classname: io.prometheus.kudu.fetcher.KuduMetricsRestFetcher
+prom.kudu.fetcher.kudu-nodes: [ 172.24.10.2:8051, 172.24.10.3:8050, 172.24.10.4:8050, 172.24.10.5:8050 ]
+prom.kudu.fetcher.interval: 10000
 
-# Define the fetcher configuration
-prom.kudu.metric.kudu-nodes: [ 172.24.10.2:8051, 172.24.10.3:8050, 172.24.10.4:8050, 172.24.10.5:8050 ]
-prom.kudu.metric.fetch-interval: 10000
-
-# Define the reporter configuration
-prom.kudu.metric.pushgateway: 127.0.0.1:9091
-prom.kudu.metric.reporter-port: 9055
-prom.kudu.metric.push-interval: 20000
+prom.kudu.reporter.classname: io.prometheus.kudu.reporter.KuduMetricLocalReporter
+prom.kudu.reporter.local.port: 9066

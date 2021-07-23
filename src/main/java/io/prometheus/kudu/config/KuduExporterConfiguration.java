@@ -1,5 +1,23 @@
+/*
+ * Copyright RyanCheung98@163.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.prometheus.kudu.config;
 
+import io.prometheus.kudu.fetcher.KuduMetricsRestFetcher;
+import io.prometheus.kudu.reporter.KuduMetricLocalReporter;
 import io.prometheus.kudu.util.ArgsEntity;
 import io.prometheus.kudu.util.LoggerUtils;
 import org.apache.logging.log4j.Logger;
@@ -11,258 +29,205 @@ import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.*;
 
+/**
+ * Loading and lasting the configuration of exporter.
+ */
 public class KuduExporterConfiguration implements Serializable {
-    private static final Logger logger = LoggerUtils.Logger();
+    protected static final Logger logger = LoggerUtils.Logger();
 
-    private static final String FETCHER_CLASSNAME = "io.prometheus.kudu.fetcher.KuduMetricsLocalReporter";
-    private static final String REPORTER_CLASSNAME = "io.prometheus.kudu.reporter.KuduMetricsLocalReporter";
-    private static final String PUSH_GATEWAY_URL = "http://127.0.0.1:9091/metrics";
-    private static final Integer LOCAL_REPORTER_PORT = 9055;
-    private static final Long FETCH_INTERVAL = 3000L;
-    private static final Long PUSH_INTERVAL = 5000L;
+    /**
+     * Keywords to be using in properties
+     */
+    public static final String METRIC_INCLUDE_KEY = "prom.kudu.metric.include";
+    public static final String METRIC_EXCLUDE_KEY = "prom.kudu.metric.exclude";
 
-    private String fetcherClassname;
-    private String reporterClassname;
+    public static final String FETCHER_CLASSNAME_KEY = "prom.kudu.fetcher.classname";
+    public static final String FETCHER_KUDU_NODES_KEY = "prom.kudu.fetcher.kudu-nodes";
+    public static final String FETCHER_INTERVAL_KEY = "prom.kudu.fetcher.interval";
 
-    private List<String> kuduNodes;
-    private Long fetchInterval;
+    public static final String REPORTER_CLASSNAME_KEY = "prom.kudu.reporter.classname";
+    public static final String REPORTER_LOCAL_PORT_KEY = "prom.kudu.reporter.local.port";
+    public static final String REPORTER_PUSH_GATEWAY_HOST_KEY = "prom.kudu.reporter.pushgateway.host";
+    public static final String REPORTER_PUSH_GATEWAY_INTERVAL_KEY = "prom.kudu.reporter.pushgateway.interval";
 
-    private String pushgatewayURL;
-    private Integer localReporterPort;
-    private Long pushInterval;
+    /**
+     * Default value to fill the properties
+     */
+    public static final List<String> METRIC_INCLUDE_DEFAULT = Collections.singletonList("");
+    public static final List<String> METRIC_EXCLUDE_DEFAULT = Collections.singletonList("");
 
-    private List<String> includeKeyword;
-    private List<String> excludeKeyword;
+    public static final String FETCHER_CLASSNAME_DEFAULT = KuduMetricsRestFetcher.class.getName();
+    public static final List<String> FETCHER_KUDU_NODES_DEFAULT = Collections.singletonList("127.0.0.1:8050");
+    public static final Integer FETCHER_INTERVAL_DEFAULT = 10000;
 
-    public static KuduExporterConfiguration getFromConfiguration(
-            ArgsEntity argsEntity) throws FileNotFoundException {
-        return getFromConfiguration(
+    public static final String REPORTER_CLASSNAME_DEFAULT = KuduMetricLocalReporter.class.getName();
+    public static final Integer REPORTER_LOCAL_PORT_DEFAULT = 9055;
+    public static final String REPORTER_PUSH_GATEWAY_HOST_DEFAULT = "127.0.0.1:9091";
+    public static final Integer REPORTER_PUSH_GATEWAY_INTERVAL_DEFAULT = 10000;
+
+
+    protected final Properties properties;
+
+    /**
+     * Private Constructor to init the properties
+     */
+    protected KuduExporterConfiguration() {
+        this.properties = new Properties() {{
+            this.put(METRIC_INCLUDE_KEY, METRIC_INCLUDE_DEFAULT);
+            this.put(METRIC_EXCLUDE_KEY, METRIC_EXCLUDE_DEFAULT);
+            this.put(FETCHER_CLASSNAME_KEY, FETCHER_CLASSNAME_DEFAULT);
+            this.put(FETCHER_KUDU_NODES_KEY, FETCHER_KUDU_NODES_DEFAULT);
+            this.put(FETCHER_INTERVAL_KEY, FETCHER_INTERVAL_DEFAULT);
+            this.put(REPORTER_CLASSNAME_KEY, REPORTER_CLASSNAME_DEFAULT);
+            this.put(REPORTER_LOCAL_PORT_KEY, REPORTER_LOCAL_PORT_DEFAULT);
+            this.put(REPORTER_PUSH_GATEWAY_HOST_KEY, REPORTER_PUSH_GATEWAY_HOST_DEFAULT);
+            this.put(REPORTER_PUSH_GATEWAY_INTERVAL_KEY, REPORTER_PUSH_GATEWAY_INTERVAL_DEFAULT);
+        }};
+    }
+
+    /**
+     * Set the key and value in properties
+     *
+     * @param key   the keyword in properties
+     * @param value value in properties
+     */
+    public <T> void setValue(String key, T value) {
+        this.properties.put(key, value);
+    }
+
+    /**
+     * Get the value by keyword in properties
+     *
+     * @param key          the keyword in properties, and it should be static announced class
+     * @param defaultValue if properties do not exist keyword, then return default value
+     * @return the value in properties, if not exists then default value as param given
+     */
+    public <T> T getValue(String key, T defaultValue) {
+        return (T) this.properties.getOrDefault(key, defaultValue);
+    }
+
+    /**
+     * Get configuration from args input
+     *
+     * @param argsEntity args
+     * @return Instance
+     */
+    public static KuduExporterConfiguration getConfiguration(ArgsEntity argsEntity) {
+        return getConfiguration(
                 argsEntity.getConfigPath(),
                 argsEntity.getIncludePath(),
                 argsEntity.getExcludePath()
         );
     }
 
-    public static KuduExporterConfiguration getFromConfiguration(
-            String yamlPath,
+    /**
+     * Get configuration from file
+     *
+     * @param confPath    the configuration file 'kudu-exporter.yml' path
+     * @param includePath the include-metrics path
+     * @param excludePath the exclude-metrics path
+     * @return instance
+     */
+    public static KuduExporterConfiguration getConfiguration(
+            String confPath,
             String includePath,
-            String excludePath) throws FileNotFoundException {
-        Map<String, Object> config = new Yaml().loadAs(new FileInputStream(yamlPath), Map.class);
-        List<String> includeMetrics = new ArrayList<String>(64) {{
-            try (Scanner sc = new Scanner(new File(includePath))) {
-                while (sc.hasNext()) {
-                    this.add(sc.next());
+            String excludePath) {
+        Map<String, Object> config = null;
+        List<String> includeMetrics = null, excludeMetrics = null;
+        try {
+            config = new Yaml().loadAs(new FileInputStream(confPath), Map.class);
+            includeMetrics = new ArrayList<String>(64) {{
+                try (Scanner sc = new Scanner(new File(includePath))) {
+                    while (sc.hasNext()) {
+                        this.add(sc.next());
+                    }
                 }
-            }
-        }};
-        List<String> excludeMetrics = new ArrayList<String>(8) {{
-            try (Scanner sc = new Scanner(new File(excludePath))) {
-                while (sc.hasNext()) {
-                    this.add(sc.next());
+            }};
+            excludeMetrics = new ArrayList<String>(8) {{
+                try (Scanner sc = new Scanner(new File(excludePath))) {
+                    while (sc.hasNext()) {
+                        this.add(sc.next());
+                    }
                 }
-            }
-        }};
-        return new KuduExporterConfiguration().reload(config, includeMetrics, excludeMetrics);
+            }};
+        } catch (FileNotFoundException e) {
+            logger.warn("configuration file not found, sysytem will be configure as default.", e);
+        }
+        return getConfiguration(config, includeMetrics, excludeMetrics);
     }
 
-    private KuduExporterConfiguration() {
-        fetcherClassname = FETCHER_CLASSNAME;
-        reporterClassname = REPORTER_CLASSNAME;
-
-        kuduNodes = new ArrayList<>(8);
-        fetchInterval = FETCH_INTERVAL;
-
-        pushgatewayURL = PUSH_GATEWAY_URL;
-        localReporterPort = LOCAL_REPORTER_PORT;
-        pushInterval = PUSH_INTERVAL;
-
-        includeKeyword = new ArrayList<>(64);
-        excludeKeyword = new ArrayList<>(8);
-    }
-
-    protected KuduExporterConfiguration reload(
+    /**
+     * Get configuration
+     *
+     * @param config         configuration details as a Map
+     * @param includeMetrics include metric keywords list
+     * @param excludeMetrics exclude metric keywords list
+     * @return instance
+     */
+    public static KuduExporterConfiguration getConfiguration(
             Map<String, Object> config,
             List<String> includeMetrics,
             List<String> excludeMetrics) {
+        KuduExporterConfiguration configuration = new KuduExporterConfiguration();
         if (config != null && !config.isEmpty()) {
-            try {
-                Class.forName(
-                        this.fetcherClassname = config.getOrDefault(
-                                "prom.kudu.metric.fetcher-classname",
-                                this.fetcherClassname).toString()
-                );
-            } catch (ClassNotFoundException e) {
-                logger.error("'fetcher-classname' cannot been found in 'kudu-exporter.yml'.");
-            }
-
-            try {
-                Class.forName(
-                        this.reporterClassname = config.getOrDefault(
-                                "prom.kudu.metric.reporter-classname",
-                                this.reporterClassname).toString()
-                );
-            } catch (ClassNotFoundException e) {
-                logger.error("'reporter-classname' cannot been found in 'kudu-exporter.yml'.");
-            }
-
-            try {
-                this.kuduNodes = (List<String>) config.getOrDefault(
-                        "prom.kudu.metric.kudu-nodes",
-                        this.kuduNodes
-                );
-            } catch (Exception e) {
-                logger.error("'kudu-nodes' format mismatch in 'kudu-exporter.yml'.");
-            }
-
-            try {
-                this.fetchInterval = Long.valueOf(config.getOrDefault(
-                        "prom.kudu.metric.fetch-interval",
-                        this.fetchInterval).toString());
-            } catch (Exception e) {
-                logger.error("'fetch-interval' is not long value in 'kudu-exporter.yml'.");
-            }
-
-            try {
-                this.pushgatewayURL = config.getOrDefault(
-                        "prom.kudu.metric.pushgateway",
-                        this.pushgatewayURL).toString();
-            } catch (Exception e) {
-                logger.error("'pushgateway' value mismatched in 'kudu-exporter.yml'.");
-            }
-
-            try {
-                this.localReporterPort = Integer.valueOf(config.getOrDefault(
-                        "prom.kudu.metric.reporter-port",
-                        this.localReporterPort).toString());
-            } catch (Exception e) {
-                logger.error("'reporter-port' is not integer value in 'kudu-exporter.yml'.");
-            }
-
-            try {
-                this.pushInterval = Long.valueOf(config.getOrDefault(
-                        "prom.kudu.metric.push-interval",
-                        this.pushInterval).toString());
-            } catch (Exception e) {
-                logger.error("'push-interval' is not long value in 'kudu-exporter.yml'.");
+            for (Map.Entry<String, Object> conf : config.entrySet()) {
+                if (conf.getValue() instanceof String) {
+                    configuration.setValue(conf.getKey(), conf.getValue().toString());
+                } else if (conf.getValue() instanceof Long) {
+                    configuration.setValue(conf.getKey(), Long.valueOf(conf.getValue().toString()));
+                } else if (conf.getValue() instanceof Integer || conf.getValue() instanceof Short
+                        || conf.getValue() instanceof Byte) {
+                    configuration.setValue(conf.getKey(), Integer.valueOf(conf.getValue().toString()));
+                } else if (conf.getValue() instanceof Double || conf.getValue() instanceof Float) {
+                    configuration.setValue(conf.getKey(), Double.valueOf(conf.getValue().toString()));
+                } else if (conf.getValue() instanceof Collection) {
+                    configuration.setValue(conf.getKey(), conf.getValue());
+                }
             }
         }
-
         if (includeMetrics != null && !includeMetrics.isEmpty()) {
-            try {
-                this.includeKeyword = includeMetrics;
-            } catch (Exception e) {
-                logger.error("'include-metrics' cannot be parsed.");
-            }
+            configuration.setValue(METRIC_INCLUDE_KEY, includeMetrics);
         }
-
         if (excludeMetrics != null && !excludeMetrics.isEmpty()) {
-            try {
-                this.excludeKeyword = excludeMetrics;
-            } catch (Exception e) {
-                logger.error("'exclude-metrics' cannot be parsed.");
-            }
+            configuration.setValue(METRIC_EXCLUDE_KEY, excludeMetrics);
         }
-
-        return this;
+        return configuration;
     }
 
-    public String getFetcherClassname() {
-        return fetcherClassname;
+    public List<String> getMetricIncludeKeys() {
+        return this.getValue(METRIC_INCLUDE_KEY, METRIC_INCLUDE_DEFAULT);
     }
 
-    public void setFetcherClassname(String fetcherClassname) {
-        this.fetcherClassname = fetcherClassname;
+    public List<String> getMetricExcludeKeys() {
+        return this.getValue(METRIC_EXCLUDE_KEY, METRIC_EXCLUDE_DEFAULT);
     }
 
-    public String getReporterClassname() {
-        return reporterClassname;
+    public String getFetcherClassName() {
+        return this.getValue(FETCHER_CLASSNAME_KEY, FETCHER_CLASSNAME_DEFAULT);
     }
 
-    public void setReporterClassname(String reporterClassname) {
-        this.reporterClassname = reporterClassname;
+    public List<String> getFetcherKuduNodes() {
+        return this.getValue(FETCHER_KUDU_NODES_KEY, FETCHER_KUDU_NODES_DEFAULT);
     }
 
-    public List<String> getKuduNodes() {
-        return kuduNodes;
+    public Integer getFetcherInterval() {
+        return this.getValue(FETCHER_INTERVAL_KEY, FETCHER_INTERVAL_DEFAULT);
     }
 
-    public void setKuduNodes(List<String> kuduNodes) {
-        this.kuduNodes = kuduNodes;
-    }
-
-    public Long getFetchInterval() {
-        return fetchInterval;
-    }
-
-    public void setFetchInterval(Long fetchInterval) {
-        this.fetchInterval = fetchInterval;
-    }
-
-    public String getPushgatewayURL() {
-        return pushgatewayURL;
-    }
-
-    public void setPushgatewayURL(String pushgatewayURL) {
-        this.pushgatewayURL = pushgatewayURL;
+    public String getReporterClassName() {
+        return this.getValue(REPORTER_CLASSNAME_KEY, REPORTER_CLASSNAME_DEFAULT);
     }
 
     public Integer getLocalReporterPort() {
-        return localReporterPort;
+        return this.getValue(REPORTER_LOCAL_PORT_KEY, REPORTER_LOCAL_PORT_DEFAULT);
     }
 
-    public void setLocalReporterPort(Integer localReporterPort) {
-        this.localReporterPort = localReporterPort;
+    public String getPushGatewayReporterHost() {
+        return this.getValue(REPORTER_PUSH_GATEWAY_HOST_KEY, REPORTER_PUSH_GATEWAY_HOST_DEFAULT);
     }
 
-    public Long getPushInterval() {
-        return pushInterval;
+    public Integer getPushGatewayReporterInterval() {
+        return this.getValue(REPORTER_PUSH_GATEWAY_INTERVAL_KEY, REPORTER_PUSH_GATEWAY_INTERVAL_DEFAULT);
     }
 
-    public void setPushInterval(Long pushInterval) {
-        this.pushInterval = pushInterval;
-    }
-
-    public List<String> getIncludeKeyword() {
-        return includeKeyword;
-    }
-
-    public void setIncludeKeyword(List<String> includeKeyword) {
-        this.includeKeyword = includeKeyword;
-    }
-
-    public List<String> getExcludeKeyword() {
-        return excludeKeyword;
-    }
-
-    public void setExcludeKeyword(List<String> excludeKeyword) {
-        this.excludeKeyword = excludeKeyword;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        KuduExporterConfiguration that = (KuduExporterConfiguration) o;
-        return Objects.equals(fetcherClassname, that.fetcherClassname) && Objects.equals(reporterClassname, that.reporterClassname) && Objects.equals(kuduNodes, that.kuduNodes) && Objects.equals(fetchInterval, that.fetchInterval) && Objects.equals(pushgatewayURL, that.pushgatewayURL) && Objects.equals(localReporterPort, that.localReporterPort) && Objects.equals(pushInterval, that.pushInterval) && Objects.equals(includeKeyword, that.includeKeyword) && Objects.equals(excludeKeyword, that.excludeKeyword);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(fetcherClassname, reporterClassname, kuduNodes, fetchInterval, pushgatewayURL, localReporterPort, pushInterval, includeKeyword, excludeKeyword);
-    }
-
-    @Override
-    public String toString() {
-        return "KuduExporterConfiguration{" +
-                "fetcherClassname='" + fetcherClassname + '\'' +
-                ", reporterClassname='" + reporterClassname + '\'' +
-                ", kuduNodes=" + kuduNodes +
-                ", fetchInterval=" + fetchInterval +
-                ", pushgatewayURL='" + pushgatewayURL + '\'' +
-                ", localReporterPort=" + localReporterPort +
-                ", pushInterval=" + pushInterval +
-                ", includeKeyword=" + includeKeyword +
-                ", excludeKeyword=" + excludeKeyword +
-                '}';
-    }
 }

@@ -37,18 +37,18 @@ public class KuduMetricFetcherRunner implements Runnable {
     public void run() {
         try {
             Constructor<? extends KuduExporterTask> constructor = Class
-                    .forName(configuration.getFetcherClassname())
+                    .forName(configuration.getFetcherClassName())
                     .asSubclass(KuduExporterTask.class)
                     .getConstructor(Integer.class, KuduExporterConfiguration.class, KuduMetricsPool.class);
             ExecutorService threadPool = Executors.newWorkStealingPool();
             while (true) {
-                for (int i = configuration.getKuduNodes().size() - 1; i >= 0; i--) {
+                for (int i = configuration.getFetcherKuduNodes().size() - 1; i >= 0; i--) {
                     threadPool.submit((Callable<?>) constructor.newInstance(i, this.configuration, this.metricsPool));
                 }
-                Thread.sleep(configuration.getFetchInterval());
+                Thread.sleep(configuration.getFetcherInterval());
             }
         } catch (ClassNotFoundException e) {
-            logger.error(String.format("Fetcher class %s cannot be found.", this.configuration.getFetcherClassname()));
+            logger.error(String.format("Fetcher class %s cannot be found.", this.configuration.getFetcherClassName()));
         } catch (InterruptedException e) {
             logger.error(String.format("Fetcher threads running fail (%s).", e.getCause()));
         } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {

@@ -1,7 +1,6 @@
 package io.prometheus.kudu.reporter;
 
 import io.prometheus.client.Collector;
-import io.prometheus.client.exporter.HTTPServer;
 import io.prometheus.kudu.config.KuduExporterConfiguration;
 import io.prometheus.kudu.sink.KuduMetricsPool;
 import io.prometheus.kudu.util.LoggerUtils;
@@ -31,10 +30,14 @@ public class KuduMetricGeneralCollector extends Collector {
         Map<String, List<MetricFamilySamples.Sample>> metricFamilies =
                 new HashMap<>(1024);
 
-        MetricSampleTemplate template = MetricSampleTemplate.buildTemplate(SAMPLE_PREFIX, null,
-                configuration.getIncludeKeyword(), configuration.getExcludeKeyword());
+        MetricSampleTemplate template = MetricSampleTemplate.buildTemplate(
+                SAMPLE_PREFIX,
+                null,
+                configuration.getMetricIncludeKeys(),
+                configuration.getMetricExcludeKeys()
+        );
 
-        for (int i = configuration.getKuduNodes().size() - 1; i >= 0; i--) {
+        for (int i = configuration.getFetcherKuduNodes().size() - 1; i >= 0; i--) {
             if (this.metricsPool.read(i) == null) {
                 continue;
             }
@@ -48,7 +51,7 @@ public class KuduMetricGeneralCollector extends Collector {
                 Object id = metricsJson.get("id");
                 Object attributes = metricsJson.get("attributes");
                 Object metrics = metricsJson.get("metrics");
-                Object hostIP = configuration.getKuduNodes().get(i);
+                Object hostIP = configuration.getFetcherKuduNodes().get(i);
 
                 Map<String, String> labels = new ConcurrentHashMap<String, String>(32) {{
                     if (!StringUtils.isEmpty(hostIP)) {
