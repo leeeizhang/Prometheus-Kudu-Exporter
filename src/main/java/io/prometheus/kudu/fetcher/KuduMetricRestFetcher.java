@@ -73,7 +73,7 @@ public class KuduMetricRestFetcher extends KuduExporterTask<List<Map<?, ?>>> {
         } catch (MalformedURLException e) {
             logger.warn("malformed url for getting content.", e);
         } finally {
-            logger.info(String.format("rest fetcher-%d start.", threadID));
+            logger.debug(String.format("rest fetcher-%d start.", threadID));
         }
     }
 
@@ -99,7 +99,7 @@ public class KuduMetricRestFetcher extends KuduExporterTask<List<Map<?, ?>>> {
      */
     @Override
     protected void stop() {
-        logger.info(String.format("rest fetcher-%d stop.", threadID));
+        logger.debug(String.format("rest fetcher-%d stop.", threadID));
     }
 
 }

@@ -59,7 +59,7 @@ public class KuduMetricPushGatewayReporter extends KuduExporterTask<List<Map<?, 
         } catch (IOException e) {
             logger.warn("push-gateway reporter start error.", e);
         } finally {
-            logger.info("push-gateway reporter start.");
+            logger.debug("push-gateway reporter start.");
         }
     }
 
@@ -82,7 +82,7 @@ public class KuduMetricPushGatewayReporter extends KuduExporterTask<List<Map<?, 
      */
     @Override
     protected void stop() {
-        logger.info("push-gateway reporter stop.");
+        logger.debug("push-gateway reporter stop.");
     }
 
 }
