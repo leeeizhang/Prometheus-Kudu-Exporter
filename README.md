@@ -94,7 +94,7 @@ $ java -jar ./lib/prometheus-kudu-exporter-x.x.x.jar \
        --exclude ./conf/exclude-metrics
 ```
 
-## Reference
+# Reference
 
 The directory `conf` is the configuration of Kudu Exporter. We try our best to balance the simplified configuration, as Prometheus official suggested, and custom features. Although Kudu Exporter can be effectively deployed as above-mentioned steps, you can also follow next guideline if you have specially requirements.
 
