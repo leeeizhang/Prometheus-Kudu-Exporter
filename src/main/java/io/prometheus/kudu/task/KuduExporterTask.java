@@ -17,7 +17,7 @@
 package io.prometheus.kudu.task;
 
 import io.prometheus.kudu.config.KuduExporterConfiguration;
-import io.prometheus.kudu.sink.KuduMetricsPool;
+import io.prometheus.kudu.sink.KuduMetricPool;
 import io.prometheus.kudu.util.LoggerUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -26,7 +26,7 @@ public abstract class KuduExporterTask<T> implements Runnable {
 
     protected final Integer threadID;
     protected final KuduExporterConfiguration configuration;
-    protected final KuduMetricsPool<T> metricPool;
+    protected final KuduMetricPool<T> metricPool;
 
     /**
      * Protected Constructor to init the ExporterTask
@@ -38,7 +38,7 @@ public abstract class KuduExporterTask<T> implements Runnable {
     protected KuduExporterTask(
             Integer threadID,
             KuduExporterConfiguration configuration,
-            KuduMetricsPool<T> metricPool) {
+            KuduMetricPool<T> metricPool) {
         this.threadID = threadID;
         this.configuration = configuration;
         this.metricPool = metricPool;

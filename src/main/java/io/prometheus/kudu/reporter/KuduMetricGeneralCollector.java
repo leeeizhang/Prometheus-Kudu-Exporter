@@ -2,7 +2,7 @@ package io.prometheus.kudu.reporter;
 
 import io.prometheus.client.Collector;
 import io.prometheus.kudu.config.KuduExporterConfiguration;
-import io.prometheus.kudu.sink.KuduMetricsPool;
+import io.prometheus.kudu.sink.KuduMetricPool;
 import io.prometheus.kudu.util.LoggerUtils;
 import io.prometheus.kudu.util.MetricSampleTemplate;
 import io.prometheus.kudu.util.StringUtils;
@@ -17,11 +17,11 @@ public class KuduMetricGeneralCollector extends Collector {
     private static final String SAMPLE_PREFIX = "kudu_";
 
     protected final KuduExporterConfiguration configuration;
-    protected final KuduMetricsPool<List<Map<?, ?>>> metricsPool;
+    protected final KuduMetricPool<List<Map<?, ?>>> metricsPool;
 
     public KuduMetricGeneralCollector(
             KuduExporterConfiguration configuration,
-            KuduMetricsPool<List<Map<?, ?>>> metricsPool) {
+            KuduMetricPool<List<Map<?, ?>>> metricsPool) {
         this.configuration = configuration;
         this.metricsPool = metricsPool;
     }

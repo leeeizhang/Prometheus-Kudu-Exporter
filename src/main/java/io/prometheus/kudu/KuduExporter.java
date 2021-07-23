@@ -1,7 +1,7 @@
 package io.prometheus.kudu;
 
 import io.prometheus.kudu.config.KuduExporterConfiguration;
-import io.prometheus.kudu.sink.KuduMetricsPool;
+import io.prometheus.kudu.sink.KuduMetricPool;
 import io.prometheus.kudu.task.KuduMetricFetcherRunner;
 import io.prometheus.kudu.task.KuduMetricReporterRunner;
 import io.prometheus.kudu.util.ArgsEntity;
@@ -25,7 +25,7 @@ public class KuduExporter {
 
             // Build configuration and metric pool
             KuduExporterConfiguration configuration = KuduExporterConfiguration.getConfiguration(argsEntity);
-            KuduMetricsPool<List<Map<?, ?>>> metricsPool = KuduMetricsPool.build();
+            KuduMetricPool<List<Map<?, ?>>> metricsPool = KuduMetricPool.build();
 
             // Start fetcher jobs and the reporter job by custom configuration
             KuduMetricFetcherRunner.run(configuration, metricsPool);

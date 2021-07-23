@@ -19,10 +19,8 @@ package io.prometheus.kudu.reporter;
 import io.prometheus.client.Collector;
 import io.prometheus.client.exporter.PushGateway;
 import io.prometheus.kudu.config.KuduExporterConfiguration;
-import io.prometheus.kudu.sink.KuduMetricsPool;
+import io.prometheus.kudu.sink.KuduMetricPool;
 import io.prometheus.kudu.task.KuduExporterTask;
-import io.prometheus.kudu.util.LoggerUtils;
-import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.List;
@@ -45,7 +43,7 @@ public class KuduMetricPushGatewayReporter extends KuduExporterTask<List<Map<?, 
     public KuduMetricPushGatewayReporter(
             Integer threadID,
             KuduExporterConfiguration configuration,
-            KuduMetricsPool<List<Map<?, ?>>> metricPool) {
+            KuduMetricPool<List<Map<?, ?>>> metricPool) {
         super(threadID, configuration, metricPool);
     }
 

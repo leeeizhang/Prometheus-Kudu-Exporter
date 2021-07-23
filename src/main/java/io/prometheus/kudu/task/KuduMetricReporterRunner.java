@@ -1,7 +1,7 @@
 package io.prometheus.kudu.task;
 
 import io.prometheus.kudu.config.KuduExporterConfiguration;
-import io.prometheus.kudu.sink.KuduMetricsPool;
+import io.prometheus.kudu.sink.KuduMetricPool;
 import io.prometheus.kudu.util.LoggerUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -14,18 +14,18 @@ public class KuduMetricReporterRunner implements Runnable {
     private static final Logger logger = LoggerUtils.Logger();
 
     private final KuduExporterConfiguration configuration;
-    private final KuduMetricsPool<List<Map<?, ?>>> metricsPool;
+    private final KuduMetricPool<List<Map<?, ?>>> metricsPool;
 
     public KuduMetricReporterRunner(
             KuduExporterConfiguration configuration,
-            KuduMetricsPool<List<Map<?, ?>>> metricsPool) {
+            KuduMetricPool<List<Map<?, ?>>> metricsPool) {
         this.configuration = configuration;
         this.metricsPool = metricsPool;
     }
 
     public static void run(
             KuduExporterConfiguration configuration,
-            KuduMetricsPool<List<Map<?, ?>>> metricsPool) {
+            KuduMetricPool<List<Map<?, ?>>> metricsPool) {
         Thread thread = new Thread(new KuduMetricReporterRunner(configuration, metricsPool));
         thread.start();
     }
@@ -36,7 +36,7 @@ public class KuduMetricReporterRunner implements Runnable {
             Constructor<? extends KuduExporterTask> constructor = Class
                     .forName(configuration.getReporterClassName())
                     .asSubclass(KuduExporterTask.class)
-                    .getConstructor(Integer.class, KuduExporterConfiguration.class, KuduMetricsPool.class);
+                    .getConstructor(Integer.class, KuduExporterConfiguration.class, KuduMetricPool.class);
             KuduExporterTask reporter = constructor.newInstance(0, this.configuration, this.metricsPool);
             reporter.start();
             while (true) {

@@ -19,7 +19,7 @@ package io.prometheus.kudu.reporter;
 import io.prometheus.client.Collector;
 import io.prometheus.client.exporter.HTTPServer;
 import io.prometheus.kudu.config.KuduExporterConfiguration;
-import io.prometheus.kudu.sink.KuduMetricsPool;
+import io.prometheus.kudu.sink.KuduMetricPool;
 import io.prometheus.kudu.task.KuduExporterTask;
 
 import java.io.IOException;
@@ -43,7 +43,7 @@ public class KuduMetricLocalReporter extends KuduExporterTask<List<Map<?, ?>>> {
     public KuduMetricLocalReporter(
             Integer threadID,
             KuduExporterConfiguration configuration,
-            KuduMetricsPool<List<Map<?, ?>>> metricPool) {
+            KuduMetricPool<List<Map<?, ?>>> metricPool) {
         super(threadID, configuration, metricPool);
     }
 

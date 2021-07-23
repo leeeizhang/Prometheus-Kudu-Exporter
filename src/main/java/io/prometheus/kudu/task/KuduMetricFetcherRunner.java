@@ -1,7 +1,7 @@
 package io.prometheus.kudu.task;
 
 import io.prometheus.kudu.config.KuduExporterConfiguration;
-import io.prometheus.kudu.sink.KuduMetricsPool;
+import io.prometheus.kudu.sink.KuduMetricPool;
 import io.prometheus.kudu.util.LoggerUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -9,7 +9,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -17,18 +16,18 @@ public class KuduMetricFetcherRunner implements Runnable {
     private static final Logger logger = LoggerUtils.Logger();
 
     private final KuduExporterConfiguration configuration;
-    private final KuduMetricsPool<List<Map<?, ?>>> metricsPool;
+    private final KuduMetricPool<List<Map<?, ?>>> metricsPool;
 
     private KuduMetricFetcherRunner(
             KuduExporterConfiguration configuration,
-            KuduMetricsPool<List<Map<?, ?>>> metricsPool) {
+            KuduMetricPool<List<Map<?, ?>>> metricsPool) {
         this.configuration = configuration;
         this.metricsPool = metricsPool;
     }
 
     public static void run(
             KuduExporterConfiguration configuration,
-            KuduMetricsPool<List<Map<?, ?>>> metricsPool) {
+            KuduMetricPool<List<Map<?, ?>>> metricsPool) {
         Thread thread = new Thread(new KuduMetricFetcherRunner(configuration, metricsPool));
         thread.start();
     }
@@ -39,7 +38,7 @@ public class KuduMetricFetcherRunner implements Runnable {
             Constructor<? extends KuduExporterTask> constructor = Class
                     .forName(configuration.getFetcherClassName())
                     .asSubclass(KuduExporterTask.class)
-                    .getConstructor(Integer.class, KuduExporterConfiguration.class, KuduMetricsPool.class);
+                    .getConstructor(Integer.class, KuduExporterConfiguration.class, KuduMetricPool.class);
             ExecutorService threadPool = Executors.newWorkStealingPool();
             while (true) {
                 for (int i = configuration.getFetcherKuduNodes().size() - 1; i >= 0; i--) {

@@ -18,7 +18,7 @@ package io.prometheus.kudu.fetcher;
 
 import com.google.gson.Gson;
 import io.prometheus.kudu.config.KuduExporterConfiguration;
-import io.prometheus.kudu.sink.KuduMetricsPool;
+import io.prometheus.kudu.sink.KuduMetricPool;
 import io.prometheus.kudu.task.KuduExporterTask;
 
 import java.io.IOException;
@@ -48,7 +48,7 @@ public class KuduMetricRestFetcher extends KuduExporterTask<List<Map<?, ?>>> {
     public KuduMetricRestFetcher(
             Integer threadID,
             KuduExporterConfiguration configuration,
-            KuduMetricsPool<List<Map<?, ?>>> metricPool) {
+            KuduMetricPool<List<Map<?, ?>>> metricPool) {
         super(threadID, configuration, metricPool);
     }
 
