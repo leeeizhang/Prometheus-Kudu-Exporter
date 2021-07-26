@@ -147,10 +147,12 @@ public class KuduMetricGeneralCollector extends Collector {
                             }
 
                             if (metricSamples.size() != 0) {
-                                if (!metricFamilies.containsKey(metricName)) {
-                                    metricFamilies.put(metricName, new ArrayList<>(64));
+                                if (!metricFamilies.containsKey(SAMPLE_PREFIX.concat(metricName))) {
+                                    metricFamilies.put(
+                                            SAMPLE_PREFIX.concat(metricName),
+                                            new ArrayList<>(1 << 10));
                                 }
-                                metricFamilies.get(metricName).addAll(metricSamples);
+                                metricFamilies.get(SAMPLE_PREFIX.concat(metricName)).addAll(metricSamples);
                             }
 
                         } catch (Exception e) {
