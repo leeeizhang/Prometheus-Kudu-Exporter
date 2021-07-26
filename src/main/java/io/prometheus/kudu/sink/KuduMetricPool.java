@@ -35,10 +35,14 @@ public class KuduMetricPool<T> implements Serializable {
 
     private final Map<Integer, T> pool;
 
+    /**
+     * Readers–writers Problem, for more details:
+     * https://en.wikipedia.org/wiki/Readers-writers_problem
+     */
     private Integer readerCount;
-    private Semaphore mutex;
-    private Semaphore readerAndWriterMutex;
-    private Semaphore writerMutex;
+    private Semaphore resourceMutex;
+    private Semaphore readCountMutex;
+    private Semaphore serviceQueueMutex;
 
     /**
      * Private constructor to init the Pool
@@ -46,9 +50,9 @@ public class KuduMetricPool<T> implements Serializable {
     private KuduMetricPool() {
         this.pool = new ConcurrentHashMap<>(1024);
         readerCount = 0;
-        mutex = new Semaphore(1);
-        readerAndWriterMutex = new Semaphore(1);
-        writerMutex = new Semaphore(1);
+        serviceQueueMutex = new Semaphore(1);
+        readCountMutex = new Semaphore(1);
+        resourceMutex = new Semaphore(1);
     }
 
     /**
@@ -70,14 +74,14 @@ public class KuduMetricPool<T> implements Serializable {
      */
     public T write(Integer id, T source) {
         try {
-            writerMutex.acquire();
-            readerAndWriterMutex.acquire();
+            serviceQueueMutex.acquire();
+            resourceMutex.acquire();
             this.pool.put(id, source);
-            readerAndWriterMutex.release();
-            writerMutex.release();
+            resourceMutex.release();
+            serviceQueueMutex.release();
             return source;
         } catch (InterruptedException e) {
-            logger.warn("Read-Write lock in MetricPool Concurrency Control exception.");
+            logger.warn("read-write semaphore in metric pool meet concurrency control exception.");
         }
         return null;
     }
@@ -91,28 +95,28 @@ public class KuduMetricPool<T> implements Serializable {
     public T read(Integer id) {
         T result = null;
         try {
-            writerMutex.acquire();
-            mutex.acquire();
+            serviceQueueMutex.acquire();
+            readCountMutex.acquire();
             if (readerCount == 0) {
-                readerAndWriterMutex.acquire();
+                resourceMutex.acquire();
             }
             readerCount++;
-            mutex.release();
-            writerMutex.release();
+            readCountMutex.release();
+            serviceQueueMutex.release();
 
             if (pool.containsKey(id)) {
                 result = pool.get(id);
             }
 
-            mutex.acquire();
+            readCountMutex.acquire();
             readerCount--;
             if (readerCount == 0) {
-                readerAndWriterMutex.release();
+                resourceMutex.release();
             }
-            mutex.release();
+            readCountMutex.release();
 
         } catch (InterruptedException e) {
-            logger.warn("Read-Write lock in MetricPool Concurrency Control exception.");
+            logger.warn("read-write semaphore in metric pool meet concurrency control exception.");
         }
         return result;
     }
