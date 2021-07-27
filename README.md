@@ -2,7 +2,7 @@
 
 ![license](https://img.shields.io/github/license/ContainerSolutions/locust_exporter.svg) ![stars](https://img.shields.io/github/stars/magicdevilzhang/prometheus-kudu-exporter) ![size](https://img.shields.io/github/repo-size/magicdevilzhang/prometheus-kudu-exporter?color=orange&label=size)
 
-Kudu Exporter, fetching metrics by multi-thread from [Kudu Rest API](https://kudu.apache.org/docs/administration.html#_collecting_metrics_via_http) and reporting them by standalone or push-gateway, can be applied high-availably for Prometheus.
+Kudu Exporter, fetching metrics by multi-thread from [Kudu Rest API](https://kudu.apache.org/docs/administration.html#_collecting_metrics_via_http) and reporting them by standalone or push-gateway, can be applied high-availably for Prometheus and Grafana.
 
 1. [Installation](#Installation)
    1. [Compile](#Compile)
@@ -20,56 +20,76 @@ The project can be deployed in many ways, and we suggest as following.
 
 ## Compile
 
-Kudu Exporter, finished by Java, need to compile before deploying. Download this project and compile it after maven and git is installed.
+Kudu Exporter, finished by Java, need to compile before deploying. Download this project and compile it after **maven** and **git** is installed.
 
 ```shell
 # Install Git and Maven
 $ sudo apt-get update
 $ sudo apt install git maven
 
-# Clone this Project
+# Clone this project
 $ sudo git clone https://github.com/magicdevilzhang/prometheus-kudu-exporter.git
 $ sudo cd ./prometheus-kudu-exporter
 
 # Compile by Maven
-$ sudo mvn clean package assembly:single
+$ sudo mvn clean package
+```
+
+Alternatively, we also prepared compiled binary archive for use, please download from [Releases Page](https://github.com/MagicDevilZhang/prometheus-kudu-exporter/releases).
+
+```shell
+# Download this project
+$ sudo wget https://github.com/MagicDevilZhang/prometheus-kudu-exporter/releases/download/.../xxx.tar.gz
+$ tar -zxvf xxx.tar.gz
+$ sudo cd ./prometheus-kudu-exporter
 ```
 
 ## Configuration
 
-Kudu Exporter support **Standalone** or **Push-Gateway** deployment. Standalone deployment can provide HTTP server that fetching metric resources into metric pool in advance to wait Prometheus getting metrics periodically. Alternatively, the Push-Gateway deployment, as we suggest, can reporting standard metrics to Prometheus Push Gateway initiatively and periodically. 
+Kudu Exporter support **Standalone** or **Push-Gateway** deployment. Standalone deployment can provide HTTP server that fetching metric resources into metric pool in advance to wait Prometheus getting metrics periodically. Alternatively, the Push-Gateway deployment, as we suggest, can reporting standard metrics to Prometheus Push Gateway infinitively and periodically. 
 
 Here is some examples to configure report method in Kudu Exporter by create or edit `./conf/kudu-exporter.yml`.
 
 - Standalone Deployment (Local Reporter)
 
 ```yaml
-# Define the exporter classname
-prom.kudu.metric.fetcher-classname: io.prometheus.kudu.fetcher.KuduMetricRestFetcher
-prom.kudu.metric.reporter-classname: io.prometheus.kudu.reporter.KuduMetricLocalReporter
+# Fetcher Configuration
+# Port of Kudu Server should be 8051, and Kudu Tablet Server should be 8050
+prom.kudu.fetcher.classname: io.prometheus.kudu.fetcher.KuduMetricRestFetcher
+prom.kudu.fetcher.kudu-nodes: [ 127.0.0.1:8051, 127.0.0.1:8050 ]
+prom.kudu.fetcher.interval: 10000
 
-# Define the fetcher configuration
-prom.kudu.metric.kudu-nodes: [ 127.0.0.1:8051, 127.0.0.1:8050 ]
-prom.kudu.metric.fetch-interval: 10000
+# Standalone Reporter Configuration
+# Please visit http://localhost:9055/metrics to check kudu-exporter status after start
+prom.kudu.reporter.classname: io.prometheus.kudu.reporter.KuduMetricLocalReporter
+prom.kudu.reporter.local.port: 9055
 
-# Define the reporter configuration
-prom.kudu.metric.reporter-port: 9055
+# Push-Gateway Reporter Configuration
+# Push-Gateway should be install before running kudu-exporter
+#prom.kudu.reporter.classname: io.prometheus.kudu.reporter.KuduMetricPushGatewayReporter
+#prom.kudu.reporter.pushgateway.host: 127.0.0.1:9091
+#prom.kudu.reporter.pushgateway.interval: 10000
 ```
 
 - Push-Gateway Deployment ***(Recommend)***
 
 ```yaml
-# Define the exporter classname
-prom.kudu.metric.fetcher-classname: io.prometheus.kudu.fetcher.KuduMetricRestFetcher
-prom.kudu.metric.reporter-classname: io.prometheus.kudu.reporter.KuduMetricPushGatewayReporter
+# Fetcher Configuration
+# Port of Kudu Server should be 8051, and Kudu Tablet Server should be 8050
+prom.kudu.fetcher.classname: io.prometheus.kudu.fetcher.KuduMetricRestFetcher
+prom.kudu.fetcher.kudu-nodes: [ 127.0.0.1:8051, 127.0.0.1:8050 ]
+prom.kudu.fetcher.interval: 10000
 
-# Define the fetcher configuration
-prom.kudu.metric.kudu-nodes: [ 127.0.0.1:8051, 127.0.0.1:8050 ]
-prom.kudu.metric.fetch-interval: 10000
+# Standalone Reporter Configuration
+# Please visit http://localhost:9055/metrics to check kudu-exporter status after start
+#prom.kudu.reporter.classname: io.prometheus.kudu.reporter.KuduMetricLocalReporter
+#prom.kudu.reporter.local.port: 9055
 
-# Define the reporter configuration
-prom.kudu.metric.pushgateway: 127.0.0.1:9091
-prom.kudu.metric.push-interval: 20000
+# Push-Gateway Reporter Configuration
+# Push-Gateway should be install before running kudu-exporter
+prom.kudu.reporter.classname: io.prometheus.kudu.reporter.KuduMetricPushGatewayReporter
+prom.kudu.reporter.pushgateway.host: 127.0.0.1:9091
+prom.kudu.reporter.pushgateway.interval: 10000
 ```
 
 ## Run Server
@@ -77,13 +97,13 @@ prom.kudu.metric.push-interval: 20000
 Kudu Exporter can be run as multi-thread with less system resource after compiling and configuring correctly. 
 
 ```shell
-$ nohup ./bin/kudu-exporter.sh &
+$ nohup bash ./bin/kudu-exporter.sh &
 ```
 
 Once start successfully, please visit: 
 
 - Standalone Reporter (Local Reporter): http://localhost:9055/metrics.
-- Push-Gateway Reporter: http://pushgateway-ip:port/metrics/job/kudu.
+- Push-Gateway Reporter: http://pushgateway-ip:port/metrics/.
 
 Alternatively, if you need to run Kudu Exporter jar manually, following this method.
 
@@ -106,34 +126,34 @@ The directory `conf` is the configuration of Kudu Exporter. We try our best to b
 
 Further more, the meaning of `./conf/kudu-exporter.yml` is as following list.
 
-|              parameter              |     type     |                       default                       |                            detail                            |
-| :---------------------------------: | :----------: | :-------------------------------------------------: | :----------------------------------------------------------: |
-| prom.kudu.metric.fetcher-classname  |    string    |  io.prometheus.kudu.fetcher.KuduMetricRestFetcher  | Fetcher aim at getting metrics from kudu. No more fetchers supported currently. |
-| prom.kudu.metric.reporter-classname |    string    | io.prometheus.kudu.reporter.KuduMetricLocalReporter |         [Standalone / Push-Gateway](#Configuration)          |
-|     prom.kudu.metric.kudu-nodes     | list(string) |                        null                         |         Try visit http://ip:port/metrics to verify.          |
-|   prom.kudu.metric.fetch-interval   |     long     |                     10000 (ms)                      |         Fetcher take this as a cycle to get metrics.         |
-|    prom.kudu.metric.pushgateway     |    string    |                        null                         |                  Push-Gateway host and port                  |
-|   prom.kudu.metric.push-interval    |     long     |                     20000 (ms)                      |        Reporter take this as a cycle to put metrics.         |
-|   prom.kudu.metric.reporter-port    |   integer    |                        9055                         | Only KuduMetricLocalReporter support it to get metrics via http://127.0.0.1:9055/ |
+|                parameter                |     type     |                       default                       |                            detail                            |
+| :-------------------------------------: | :----------: | :-------------------------------------------------: | :----------------------------------------------------------: |
+|       prom.kudu.fetcher.classname       |    string    |  io.prometheus.kudu.fetcher.KuduMetricRestFetcher   | Fetcher aim at getting metrics from Kudu. No more fetchers supported currently. |
+|      prom.kudu.fetcher.kudu-nodes       | list(string) |                        null                         |         Try visit http://ip:port/metrics to verify.          |
+|       prom.kudu.fetcher.interval        |     long     |                     10000 (ms)                      |         Fetcher take this as a cycle to get metrics.         |
+|      prom.kudu.reporter.classname       |    string    | io.prometheus.kudu.reporter.KuduMetricLocalReporter |         [Standalone / Push-Gateway](#Configuration)          |
+|      prom.kudu.reporter.local.port      |   integer    |                        9055                         | Only KuduMetricLocalReporter support it to get metrics via http://127.0.0.1:9055/ |
+|   prom.kudu.reporter.pushgateway.host   |    string    |                        null                         |                  Push-Gateway host and port                  |
+| prom.kudu.reporter.pushgateway.interval |     long     |                     10000 (ms)                      |        Reporter take this as a cycle to put metrics.         |
 
 ## Metrics Filter
 
-Kudu support an ocean of metrics, you can filter them via keyword by editing `./conf/include-metrics` and `./conf/exclude-metrics`. Following [Kudu Metrics Reference](https://kudu.apache.org/docs/metrics_reference.html) to find the metrics you need.
+Kudu Exporter supports an ocean of metrics, you can filter them via keywords by editing `./conf/include-metrics` or `./conf/exclude-metrics`. Please follow [Kudu Metrics Reference](https://kudu.apache.org/docs/metrics_reference.html) to find what metrics you need.
 
-Here is what we suggest:
+Here is our recommendation and examples:
 
-- on_disk_data_size
-- on_disk_size
-- rows_deleted
-- rows_inserted
-- rows_updated
-- rows_upserted
-- generic_heap_size
-- generic_current_allocated_bytes
-- block_manager_total_bytes_written
-- block_manager_total_bytes_read
-- threads_running
-- tablets_num_running
+- on_disk_data_size: Space used by this tablet’s data blocks.
+- live_row_count: Number of live rows in this tablet, excludes deleted rows.
+- rows_deleted: Number of row delete operations performed on this tablet since service start.
+- rows_inserted: Number of rows inserted into this tablet since service start.
+- rows_updated: Number of row update operations performed on this tablet since service start.
+- rows_upserted: Number of rows upserted into this tablet since service start.
+- generic_heap_size: Bytes of system memory reserved by TCMalloc.
+- generic_current_allocated_bytes: Number of bytes used by the application.
+- block_manager_total_bytes_written: Number of bytes of block data written since service start.
+- block_manager_total_bytes_read: Number of bytes of block data read since service start
+- threads_running: Current number of running threads.
+- tablets_num_running: Number of tablets currently running.
 
 # Contributing
 
