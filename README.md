@@ -14,6 +14,11 @@ Kudu Exporter, fetching metrics by multi-thread from [Kudu Rest API](https://kud
 3. [Contributing](#Contributing)
 4. [License](#License)
 
+![](grafana-kudu-dashboard.png)
+
+*Node: **grafana-kudu-dashboard** can be [download](https://github.com/MagicDevilZhang/prometheus-kudu-exporter/releases/download/v0.2.0/grafana-kudu-dashboard.json) as an example.*
+
+
 # Installation
 
 The project can be deployed in many ways, and we suggest as following.
